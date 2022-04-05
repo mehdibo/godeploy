@@ -8,3 +8,7 @@ import (
 func NewDb(dsn string) (db *gorm.DB, err error) {
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 }
+
+func AutoMigrate(db *gorm.DB) error {
+	return nil
+}
