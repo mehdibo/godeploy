@@ -10,5 +10,14 @@ func NewDb(dsn string) (db *gorm.DB, err error) {
 }
 
 func AutoMigrate(db *gorm.DB) error {
+	models := []interface{}{
+		&Application{},
+	}
+	for _, model := range models {
+		err := db.AutoMigrate(model)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
