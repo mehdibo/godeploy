@@ -14,3 +14,9 @@ type Application struct {
 	LatestCommit   string
 	LastDeployedAt time.Time
 }
+
+type HttpTask struct {
+	gorm.Model
+	Endpoint string
+	Method   string
+}
