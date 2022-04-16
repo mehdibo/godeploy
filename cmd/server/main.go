@@ -7,7 +7,6 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/env"
 	"github.com/mehdibo/go_deploy/pkg/server"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func getDb() (*gorm.DB, error) {
@@ -40,11 +39,6 @@ func main() {
 	}
 
 	e := echo.New()
-	e.GET("/ping", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
-			"message": "pong",
-		})
-	})
 
 	srv := server.NewServer(orm)
 
