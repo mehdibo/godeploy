@@ -1,0 +1,37 @@
+openapi: "3.0.2"
+info:
+  version: 1.0.0
+  title: Go Deploy
+  description: Go Deploy is a tool that listens on HTTP requests and trigger tasks to deploy applications
+  contact:
+    name: Mehdi Bounya
+    email: mehdi.bounya@gmail.com
+    url: https://github.com/mehdibo/
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+paths:
+  /ping:
+    get:
+      description: Returns a simple JSON response to test if the server is running
+      operationId: ping
+      responses:
+        '200':
+          description: Pong response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: "pong"
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
