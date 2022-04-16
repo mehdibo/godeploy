@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
 	"github.com/mehdibo/go_deploy/pkg/server"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -18,13 +20,14 @@ func getDb() (*gorm.DB, error) {
 	dbName := env.Get("DB_NAME")
 	dbPort := env.GetDefault("DB_PORT", "5432")
 	if dbHost == "" || dbUser == "" || dbPass == "" || dbName == "" {
-		panic("Required database credentials are not set, check your .env file")
+		return nil, errors.New("required database credentials are not set, check your .env file")
 	}
 	dsn := "host=" + dbHost + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " port=" + dbPort
 	dbConn, err := db.NewDb(dsn)
 	if err != nil {
 		return nil, err
 	}
+	log.Info("Running auto migrations")
 	err = db.AutoMigrate(dbConn)
 	if err != nil {
 		return nil, err
@@ -33,10 +36,21 @@ func getDb() (*gorm.DB, error) {
 }
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+	log.Info("Loading .env files")
 	env.LoadDotEnv()
+	logLvl := log.DebugLevel
+	if env.Get("APP_ENV") == "prod" {
+		logLvl = log.InfoLevel
+	}
+	log.SetLevel(logLvl)
+
+	log.Info("Connecting to database")
 	orm, err := getDb()
 	if err != nil {
-		panic("Couldn't get database :" + err.Error())
+		log.Fatalf("Couldn't get database : %s", err.Error())
 	}
 
 	e := echo.New()
