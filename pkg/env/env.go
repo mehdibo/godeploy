@@ -2,6 +2,7 @@ package env
 
 import (
 	"github.com/joho/godotenv"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -24,7 +25,7 @@ func GetDefault(key string, defaultValue string) string {
 func LoadDotEnv() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to load .env: %s", err.Error())
 	}
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" {
@@ -36,6 +37,7 @@ func LoadDotEnv() {
 		".env." + appEnv + ".local",
 	}
 	for _, file := range files {
+		log.Debugf("Loading %s file", file)
 		_ = godotenv.Overload(file)
 	}
 }
