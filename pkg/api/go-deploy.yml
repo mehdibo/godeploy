@@ -10,6 +10,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+servers:
+  - url: /api
 paths:
   /ping:
     get:
