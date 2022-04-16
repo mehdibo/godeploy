@@ -7,6 +7,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/env"
 	"github.com/mehdibo/go_deploy/pkg/server"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 func getDb() (*gorm.DB, error) {
@@ -40,9 +41,26 @@ func main() {
 
 	e := echo.New()
 
+	e.Static("/assets", "swagger-ui/assets")
+	e.File("/docs", "swagger-ui/index.html")
+
 	srv := server.NewServer(orm)
 
 	g := e.Group("/api")
+	g.GET("/swagger.json", func(ctx echo.Context) error {
+		errMsg := map[string]string{
+			"message": "Something went wrong",
+		}
+		swg, err := api.GetSwagger()
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, errMsg)
+		}
+		json, err := swg.MarshalJSON()
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, errMsg)
+		}
+		return ctx.JSONBlob(http.StatusOK, json)
+	})
 
 	api.RegisterHandlers(g, srv)
 
