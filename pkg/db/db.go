@@ -1,6 +1,7 @@
 package db
 
 import (
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&HttpTask{},
 	}
 	for _, model := range models {
+		log.Debugf("Auto migrating model %T", model)
 		err := db.AutoMigrate(model)
 		if err != nil {
 			return err
