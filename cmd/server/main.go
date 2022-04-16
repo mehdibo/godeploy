@@ -6,6 +6,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
+	"github.com/mehdibo/go_deploy/pkg/middleware"
 	"github.com/mehdibo/go_deploy/pkg/server"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -58,7 +59,7 @@ func main() {
 	e.Static("/assets", "swagger-ui/assets")
 	e.File("/docs", "swagger-ui/index.html")
 
-	srv := server.NewServer(orm)
+	e.Use(middleware.RequestLog)
 
 	g := e.Group("/api")
 	g.GET("/swagger.json", func(ctx echo.Context) error {
@@ -76,6 +77,7 @@ func main() {
 		return ctx.JSONBlob(http.StatusOK, json)
 	})
 
+	srv := server.NewServer(orm)
 	api.RegisterHandlers(g, srv)
 
 	e.Logger.Fatal(e.Start(":8080"))
