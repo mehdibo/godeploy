@@ -35,3 +35,6 @@ jobs:
           DB_PASS: test_pass
           DB_NAME: test_db
         run: make test
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
