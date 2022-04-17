@@ -25,11 +25,13 @@ jobs:
           "postgresql user": "test_user"
           "postgresql password": "test_pass"
 
+      - name: Install packages
+        run: make vendor
+
       - name: Run tests
         env:
           DB_HOST: localhost
           DB_USER: test_user
           DB_PASS: test_pass
           DB_NAME: test_db
-        run:
-          make test
+        run: make test
