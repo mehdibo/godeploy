@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Setup PostgreSQL
+        uses: Harmon758/postgresql-action@v1.0.0
+        with:
+          "postgresql db": "test_db"
+          "postgresql user": "test_user"
+          "postgresql password": "test_pass"
+
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_USER: test_user
+          DB_PASS: test_pass
+          DB_NAME: test_db
+        run:
+          make test
