@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mehdibo/go_deploy/pkg/auth"
 	"github.com/mehdibo/go_deploy/pkg/db"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
 	"time"
@@ -20,8 +21,31 @@ func NewServer(db *gorm.DB) *Server {
 	return &Server{db: db}
 }
 
+func isGranted(ctx echo.Context, role string) bool {
+	user, err := auth.LoadUserFromCtx(ctx)
+	if err != nil {
+		if err == auth.ErrUserTypeMismatch {
+			log.Errorf("Failed to load user: %s", err.Error())
+		}
+		return false
+	}
+	if user.Role == role {
+		return true
+	}
+	return false
+}
+
+func accessForbidden(ctx echo.Context) error {
+	return ctx.JSON(http.StatusForbidden, map[string]string{
+		"message": "Access forbidden.",
+	})
+}
+
 // Ping returns a simple JSON payload to test the server
 func (srv *Server) Ping(ctx echo.Context) error {
+	if !isGranted(ctx, auth.RoleAdmin) {
+		return accessForbidden(ctx)
+	}
 	return ctx.JSON(http.StatusOK, map[string]string{
 		"message": "pong",
 	})
