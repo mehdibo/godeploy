@@ -14,6 +14,7 @@ func AutoMigrate(db *gorm.DB) error {
 	models := []interface{}{
 		&Application{},
 		&SshTask{},
+		&HttpTask{},
 	}
 	for _, model := range models {
 		log.Debugf("Auto migrating model %T", model)

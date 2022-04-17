@@ -1,6 +1,7 @@
 package db
 
 import (
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 	"time"
 )
@@ -27,6 +28,7 @@ type Task struct {
 	Priority      uint
 	TaskType      int
 	SshTask       *SshTask
+	HttpTask      *HttpTask
 }
 
 type SshTask struct {
@@ -36,4 +38,13 @@ type SshTask struct {
 	Host     string
 	Port     uint
 	Command  string
+}
+
+type HttpTask struct {
+	gorm.Model
+	TaskId  uint
+	Method  string
+	Url     string
+	Headers datatypes.JSONMap
+	Body    string
 }
