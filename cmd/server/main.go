@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/labstack/echo/v4"
+	mdl "github.com/labstack/echo/v4/middleware"
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
@@ -11,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
+	"time"
 )
 
 func getDb() (*gorm.DB, error) {
@@ -60,6 +62,9 @@ func main() {
 	e.File("/docs", "swagger-ui/index.html")
 
 	e.Use(middleware.RequestLog)
+	e.Use(mdl.TimeoutWithConfig(mdl.TimeoutConfig{
+		Timeout: 30 * time.Second,
+	}))
 
 	g := e.Group("/api")
 	g.GET("/swagger.json", func(ctx echo.Context) error {
