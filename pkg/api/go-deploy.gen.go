@@ -16,6 +16,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const (
+	BasicAuthScopes = "BasicAuth.Scopes"
+)
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -31,6 +35,8 @@ type ServerInterfaceWrapper struct {
 // Ping converts echo context to params.
 func (w *ServerInterfaceWrapper) Ping(ctx echo.Context) error {
 	var err error
+
+	ctx.Set(BasicAuthScopes, []string{"ROLE_ADMIN"})
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.Ping(ctx)
@@ -72,13 +78,16 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/2RRwW7UQAz9FcvnKAnlNieEkKBIwAr2hjjMJt5kSmIPY6fSapV/R066VaveLNvv+b3n",
-	"K3YyZ2FiUwzXtcLEZ8HgfbbYmZc0xzRhwJnGPtUnWfgSPwzerDuZsUKOM2HAbz6Hj9scK1yKg0azrKFp",
-	"hmTjcnJAs/GcpMG1wp60KylbEsaAnwU+UZ7kAkkhgolMYGM0mJIasYIwfDkeD1Do30JqCpF7sJKGgQpY",
-	"1L8KJtDvHDHnKXXRuRUrnFJHrOSOboLvj290SiZWWUpHtZSheQJp47trhZZsopdKscJHKrrrf1e3detr",
-	"zhJzwoDv67a+wwpztNEjxiYnHrwYaEv3dQI/yZbCbl7TnCeCr79+fIdCmoWV3JyRGqQz2EigVB6peFhl",
-	"YXbe7XTZPN/3GPCwN28Em4K7tr19mHjT8CKp5kFdyBW1G2mOXuXinJZ29EyqcaBd+jkuk2HALNsZu2QP",
-	"R6342XV97sjpgTrDdX3z8oPw8OzPF3xl96UYfl+f3tN4muuf9X8AAAD//5MNm7SxAgAA",
+	"H4sIAAAAAAAC/2RTT2/bPgz9KgJ/v6Nhp91OPq1Fi63D+gdthx6KolBkxlZnSxpJF8gKf/eBcpKlTU7K",
+	"M/n0+Pj0Bi4OKQYMwlC/ASGnGBjzn5/BjtJF8n+wOSeKpGCD7Mgn8TFADSejdBjEO6uA8WEVadic2Qye",
+	"2YfWRDI+vNreN1BAh7ZByhc8PDw87zGgYuw6HKyeZJ0QamAhH1qY9FcAoxvJy/pOy2aZp5a9U5pdu7Yt",
+	"FYViy9KJJMgMqlErXQxinegRB+t7qGHArvHlMo5hbb+0CpYuDlBAsJnzUr+b0/wdChip3zBzXVWtl25c",
+	"akOVeZaxgqn44NfXaM4w9XGt9lgjMfZGOium9ywY2MRgvt3f3xjC3yOysLGhMUK+bZGMWP7FRqJpZg6b",
+	"Ur+xnqGA3jsMnF3cCr64P9AZEwaOIzksI7XVpokrrZ0KEC897iuFAl6ReNZ/VC7KhZYpi00eavhULspj",
+	"KCBZ6fI+qqT7qt+gRTlMzC3KSEGHZz+kHs33u+srs82dDifIYvzKSIeGkV6R1CwaQ1DefDXlmS8aqOFm",
+	"Bt8F93ix2G4YQ9aw51T1wipkP2mJlFP83D0gs21xlr6yYy9QQ4r5mo+Z3CFx+YJO5oS9H/gmhnY3n1r3",
+	"eXGk3P8TrqCG/6p/L7DaTVEdvr0PDwDqx3fRf4Tb6x/nzydnlxdX8DQ9aaV6x7lwjkClG5uepr8BAAD/",
+	"/0dOlfb2AwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
