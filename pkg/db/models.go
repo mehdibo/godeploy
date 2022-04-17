@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const (
+	TaskTypeSsh int = iota
+	TaskTypeHttp
+)
+
 type Application struct {
 	gorm.Model
 	Name           string
@@ -13,15 +18,22 @@ type Application struct {
 	LatestVersion  string
 	LatestCommit   string
 	LastDeployedAt time.Time
-	SshTasks       []SshTask
+	Tasks          []Task
+}
+
+type Task struct {
+	gorm.Model
+	ApplicationId uint
+	Priority      uint
+	TaskType      int
+	SshTask       *SshTask
 }
 
 type SshTask struct {
 	gorm.Model
-	ApplicationId uint
-	Priority      uint
-	Username      string
-	Host          string
-	Port          uint
-	Command       string
+	TaskId   uint
+	Username string
+	Host     string
+	Port     uint
+	Command  string
 }
