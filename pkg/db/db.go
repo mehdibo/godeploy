@@ -13,7 +13,7 @@ func NewDb(dsn string) (db *gorm.DB, err error) {
 func AutoMigrate(db *gorm.DB) error {
 	models := []interface{}{
 		&Application{},
-		&HttpTask{},
+		&SshTask{},
 	}
 	for _, model := range models {
 		log.Debugf("Auto migrating model %T", model)

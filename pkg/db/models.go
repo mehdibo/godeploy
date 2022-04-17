@@ -13,13 +13,15 @@ type Application struct {
 	LatestVersion  string
 	LatestCommit   string
 	LastDeployedAt time.Time
-	HttpTasks      []HttpTask
+	SshTasks       []SshTask
 }
 
-type HttpTask struct {
+type SshTask struct {
 	gorm.Model
-	ApplicationID uint
+	ApplicationId uint
 	Priority      uint
-	Endpoint      string
-	Method        string
+	Username      string
+	Host          string
+	Port          uint
+	Command       string
 }
