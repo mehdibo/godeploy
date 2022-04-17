@@ -11,6 +11,14 @@ const (
 	TaskTypeHttp
 )
 
+type User struct {
+	gorm.Model
+	Username    string
+	HashedToken string
+	LastUsedAt  time.Time
+	Role        string
+}
+
 type Application struct {
 	gorm.Model
 	Name           string
