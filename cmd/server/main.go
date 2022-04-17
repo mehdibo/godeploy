@@ -55,6 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't get database : %s", err.Error())
 	}
+	srv := server.NewServer(orm)
 
 	e := echo.New()
 
@@ -67,6 +68,18 @@ func main() {
 	}))
 
 	g := e.Group("/api")
+
+	g.Use(mdl.BasicAuthWithConfig(mdl.BasicAuthConfig{
+		Skipper: func(c echo.Context) bool {
+			if c.Path() == "/api/swagger.json" {
+				return true
+			}
+			return false
+		},
+		Validator: srv.ValidateBasicAuth,
+		Realm:     "",
+	}))
+	
 	g.GET("/swagger.json", func(ctx echo.Context) error {
 		errMsg := map[string]string{
 			"message": "Something went wrong",
@@ -82,7 +95,6 @@ func main() {
 		return ctx.JSONBlob(http.StatusOK, json)
 	})
 
-	srv := server.NewServer(orm)
 	api.RegisterHandlers(g, srv)
 
 	e.Logger.Fatal(e.Start(":8080"))
