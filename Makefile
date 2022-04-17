@@ -7,3 +7,7 @@ generate-api:
 .PHONY: lint
 lint:
 	golangci-lint run
+
+.PHONY: test
+test:
+	go test ./pkg/auth ./pkg/env ./pkg/server
