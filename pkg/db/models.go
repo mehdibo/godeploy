@@ -13,9 +13,9 @@ const (
 
 type User struct {
 	gorm.Model
-	Username    string
+	Username    string `gorm:"uniqueIndex"`
 	HashedToken string
-	LastUsedAt  time.Time
+	LastUsedAt  *time.Time
 	Role        string
 }
 
