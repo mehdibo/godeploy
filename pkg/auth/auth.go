@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -11,6 +12,10 @@ import (
 const (
 	// UserKey the key used in the context for the user
 	UserKey = "Auth.User"
+	// RoleAdmin role given to admin users
+	RoleAdmin = "Auth.RoleAdmin"
+	// TokenSize token size in bytes
+	TokenSize = 21
 )
 
 var (
@@ -20,6 +25,14 @@ var (
 	// ErrUserTypeMismatch failed to retrieve user, type mismatch
 	ErrUserTypeMismatch = errors.New("failed to retrieve user, type mismatch")
 )
+
+func GenerateToken() (string, error) {
+	b := make([]byte, TokenSize)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
 
 func HashToken(rawToken string) string {
 	h := sha256.New()
