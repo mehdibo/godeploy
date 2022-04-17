@@ -29,6 +29,7 @@ func LoadDotEnv() {
 	}
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" {
+		appEnv = "dev"
 		_ = os.Setenv("APP_ENV", "dev")
 	}
 	files := []string{
