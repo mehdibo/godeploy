@@ -16,7 +16,9 @@ import (
 
 type ServerTestSuite struct {
 	suite.Suite
-	Server *Server
+	server *Server
+	tx     *gorm.DB
+	dbConn *gorm.DB
 }
 
 func (s *ServerTestSuite) getDb() *gorm.DB {
@@ -57,11 +59,18 @@ func loadFixtures(dbConn *gorm.DB) {
 	}
 }
 
-func (s *ServerTestSuite) SetupTest() {
-	dbConn := s.getDb()
-	loadFixtures(dbConn)
-	s.Server = NewServer(dbConn)
+func (s *ServerTestSuite) SetupSuite() {
+	s.dbConn = s.getDb()
+	loadFixtures(s.dbConn)
+}
 
+func (s *ServerTestSuite) SetupTest() {
+	s.tx = s.dbConn.Begin()
+	s.server = NewServer(s.tx)
+}
+
+func (s *ServerTestSuite) TearDownTest() {
+	s.tx.Rollback()
 }
 
 func prepareRequest(method string, uri string, body io.Reader, authUser *db.User) (echo.Context, *httptest.ResponseRecorder) {
@@ -78,7 +87,7 @@ func prepareRequest(method string, uri string, body io.Reader, authUser *db.User
 func (s *ServerTestSuite) TestPing() {
 	s.T().Run("unauthenticated", func(t *testing.T) {
 		ctx, rec := prepareRequest(http.MethodGet, "/api/ping", nil, nil)
-		if assert.NoError(t, s.Server.Ping(ctx)) {
+		if assert.NoError(t, s.server.Ping(ctx)) {
 			assert.Equal(t, http.StatusForbidden, rec.Code)
 		}
 
@@ -90,7 +99,7 @@ func (s *ServerTestSuite) TestPing() {
 			Role:        auth.RoleAdmin,
 		}
 		ctx, rec := prepareRequest(http.MethodGet, "/api/ping", nil, &adminUser)
-		if assert.NoError(t, s.Server.Ping(ctx)) {
+		if assert.NoError(t, s.server.Ping(ctx)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.Equal(t, "{\"message\":\"pong\"}\n", rec.Body.String())
 		}
