@@ -6,10 +6,20 @@ import (
 	"time"
 )
 
+type TaskType int
+
 const (
-	TaskTypeSsh int = iota
+	TaskTypeSsh TaskType = iota
 	TaskTypeHttp
 )
+
+func (t TaskType) String() string {
+	return [...]string{"SshTask", "HttpTask"}[t-1]
+}
+
+func (t TaskType) EnumIndex() int {
+	return int(t)
+}
 
 type User struct {
 	gorm.Model
@@ -34,7 +44,7 @@ type Task struct {
 	gorm.Model
 	ApplicationId uint
 	Priority      uint
-	TaskType      int
+	TaskType      TaskType
 	SshTask       *SshTask
 	HttpTask      *HttpTask
 }
