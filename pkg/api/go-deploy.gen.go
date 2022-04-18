@@ -20,8 +20,64 @@ const (
 	BasicAuthScopes = "BasicAuth.Scopes"
 )
 
+// CreatedApplication defines model for CreatedApplication.
+type CreatedApplication struct {
+	Description *string `json:"description,omitempty"`
+	Id          int     `json:"id"`
+	Name        string  `json:"name"`
+
+	// Secret used to trigger a deployment, store somewhere safe
+	RawSecret string `json:"rawSecret"`
+}
+
+// NewApplication defines model for NewApplication.
+type NewApplication struct {
+	Description *string `json:"description,omitempty"`
+
+	// A list of HTTP requests to send
+	HttpTasks *[]NewHttpTask `json:"httpTasks,omitempty"`
+	Name      string         `json:"name"`
+
+	// A list oh SSH commands to run
+	SshTasks *[]NewSshTask `json:"sshTasks,omitempty"`
+}
+
+// NewHttpTask defines model for NewHttpTask.
+type NewHttpTask struct {
+	Body *string `json:"body,omitempty"`
+
+	// An object of Header-name:Value
+	Headers *map[string]interface{} `json:"headers,omitempty"`
+	Method  string                  `json:"method"`
+
+	// The lower the number the higher the priority
+	Priority int    `json:"priority"`
+	Url      string `json:"url"`
+}
+
+// NewSshTask defines model for NewSshTask.
+type NewSshTask struct {
+	// Command to run on the target host
+	Command string `json:"command"`
+	Host    string `json:"host"`
+	Port    int    `json:"port"`
+
+	// The lower the number the higher the priority
+	Priority int    `json:"priority"`
+	Username string `json:"username"`
+}
+
+// AddApplicationJSONBody defines parameters for AddApplication.
+type AddApplicationJSONBody NewApplication
+
+// AddApplicationJSONRequestBody defines body for AddApplication for application/json ContentType.
+type AddApplicationJSONRequestBody AddApplicationJSONBody
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (POST /applications)
+	AddApplication(ctx echo.Context) error
 
 	// (GET /ping)
 	Ping(ctx echo.Context) error
@@ -30,6 +86,17 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// AddApplication converts echo context to params.
+func (w *ServerInterfaceWrapper) AddApplication(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BasicAuthScopes, []string{"ROLE_ADMIN"})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.AddApplication(ctx)
+	return err
 }
 
 // Ping converts echo context to params.
@@ -71,6 +138,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.POST(baseURL+"/applications", wrapper.AddApplication)
 	router.GET(baseURL+"/ping", wrapper.Ping)
 
 }
@@ -78,16 +146,23 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/2RTT2/bPgz9KgJ/v6Nhp91OPq1Fi63D+gdthx6KolBkxlZnSxpJF8gKf/eBcpKlTU7K",
-	"M/n0+Pj0Bi4OKQYMwlC/ASGnGBjzn5/BjtJF8n+wOSeKpGCD7Mgn8TFADSejdBjEO6uA8WEVadic2Qye",
-	"2YfWRDI+vNreN1BAh7ZByhc8PDw87zGgYuw6HKyeZJ0QamAhH1qY9FcAoxvJy/pOy2aZp5a9U5pdu7Yt",
-	"FYViy9KJJMgMqlErXQxinegRB+t7qGHArvHlMo5hbb+0CpYuDlBAsJnzUr+b0/wdChip3zBzXVWtl25c",
-	"akOVeZaxgqn44NfXaM4w9XGt9lgjMfZGOium9ywY2MRgvt3f3xjC3yOysLGhMUK+bZGMWP7FRqJpZg6b",
-	"Ur+xnqGA3jsMnF3cCr64P9AZEwaOIzksI7XVpokrrZ0KEC897iuFAl6ReNZ/VC7KhZYpi00eavhULspj",
-	"KCBZ6fI+qqT7qt+gRTlMzC3KSEGHZz+kHs33u+srs82dDifIYvzKSIeGkV6R1CwaQ1DefDXlmS8aqOFm",
-	"Bt8F93ix2G4YQ9aw51T1wipkP2mJlFP83D0gs21xlr6yYy9QQ4r5mo+Z3CFx+YJO5oS9H/gmhnY3n1r3",
-	"eXGk3P8TrqCG/6p/L7DaTVEdvr0PDwDqx3fRf4Tb6x/nzydnlxdX8DQ9aaV6x7lwjkClG5uepr8BAAD/",
-	"/0dOlfb2AwAA",
+	"H4sIAAAAAAAC/7xWUXPbNgz+Kzxuj5rlpsse9LSk7S3ZrWmuzpaHXK5HS7DETiQ1AIrn5fLfd6AYW7ac",
+	"9XbdzU80KAIfPgAf+ajL4LrgwTPp4lEjUBc8Qfzzqzc9NwHtX1C9QwwoxgqoRNuxDV4X+qznBjzb0ohB",
+	"Wb8K6NKalLNE1tcqoLL+wbS20pluwFSAMcDt7e2nkQcQG5UNOCMr3nSgC02M1tf6SX5Z2o6n3yAYhuqs",
+	"69oUX6wdhg6Q7ZDCHtqJy0zbamS2nqEGFLs3Do4eQLNeQInAUy4Gu+oJKsVBMdq6BlRGVdC1YePAc6aI",
+	"A4Ki4GDdgKzMCnQ2yTXTCH/0FqHSxZ2OvEVIYwCZZkO/k77fHg/Lz1CywLyC9Vfx0jB3N9H7tOSqtcQq",
+	"rNTFzc21EpxATJIygReklsHFg98irHShv8l3TZanAuZXsL5IQSRgQmAQzeYfC0DUfAFYoxaLC1UG54yv",
+	"Ii7s/b+AtRgiTFEdVCVCfIH8bWoT5peh2hynfDcXB3l5NfiOnMevvpPYxW+m7UfNswPggJtQHY3SoQ1o",
+	"eTMNc9OAasMaUHEDyvdumZaNrZu03J7OtLPeut7pYp4dmZ8e22MjvE/g2NuAeDj4AqfPdZlQmko9TenN",
+	"sJFaQAUfk2CDNbBqAvF08jId7UepC5imfmX6lnVxcpJpZ/4caPjh9PT16YiWV8do+b/YJ8AXBujlEmwP",
+	"JQpSwtmW3mlZZByh7MXBQuZnKMe5IVuKrG/lXM4sxbrjWwRGR0WXO2OoomdTRobBGdvqQjtoKjtbht5v",
+	"zI+1GGdlcM9aWOj3sq/O437qncEzFXleW276pRzIo59lyIWbfdp/CuptVGe5roziEFrFjeEoJeBJemZf",
+	"5mI/JWmP+ivdNSi8MjvJJZ3p1pbgKVbhGfDlzQRn6MBT6LGEWcA6T4col29Fgiy3MEaqM/0ASAP+V7P5",
+	"bC6fiRfTWV3o17P57ESqZ7iJ9cj3YMn0pA4/GJZ4nSqjPKzV+PKIzjGuLyvRo6ra307cnCdlk0KCjxFG",
+	"kfPPNNw1uwv+Czo8DvK037iMPUTD6LVyMp//Z9GPPC0iggNh3m2rcjihqC9LIFr1bTvcGGxqkkk7Gxfh",
+	"XnbyTiayeNT1sdfER+AevTQlWde1oH5efLhSzxnHBwYQK7uK0kCAD4DSxNh7L34Pq3Y9GL+Ksn3ZdUBk",
+	"atiTRN2FGGaqOofSMWHzOvh6m5+09PfzVy/VaZtFPn2jPj8UkzDp4m5Pku70xw+/vPt09vb95ZW+f7qX",
+	"L4U7ih8Oo5nLJD3dP/0dAAD//70DXTEeCwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

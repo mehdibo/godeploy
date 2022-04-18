@@ -16,6 +16,26 @@ security:
   - BasicAuth:
     - ROLE_ADMIN
 paths:
+  /applications:
+    post:
+      description: Create a new Application
+      operationId: addApplication
+      tags:
+        - Applications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewApplication'
+      responses:
+        '200':
+          description: Application created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedApplication'
+
   /ping:
     get:
       description: Returns a simple JSON response to test if the server is running
@@ -46,7 +66,105 @@ components:
     BasicAuth:
       type: http
       scheme: basic
+
   schemas:
+    NewApplication:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        httpTasks:
+          type: array
+          description: A list of HTTP requests to send
+          items:
+            $ref: "#/components/schemas/NewHttpTask"
+        sshTasks:
+          type: array
+          description: A list oh SSH commands to run
+          items:
+            $ref: "#/components/schemas/NewSshTask"
+
+    CreatedApplication:
+      type: object
+      required:
+        - id
+        - name
+        - rawSecret
+        - tasks
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        rawSecret:
+          type: string
+          description: Secret used to trigger a deployment, store somewhere safe
+
+    Task:
+      type: object
+      properties:
+        applicationId:
+          type: integer
+        priority:
+          type: integer
+          minimum: 0
+        taskType:
+          type: string
+          description: Can be either HTTP or SSH
+
+    NewHttpTask:
+      type: object
+      required:
+        - priority
+        - method
+        - url
+      properties:
+        priority:
+          type: integer
+          description: The lower the number the higher the priority
+          minimum: 0
+        method:
+          type: string
+        url:
+          type: string
+        headers:
+          type: object
+          description: "An object of Header-name:Value"
+        body:
+          type: string
+
+    NewSshTask:
+      type: object
+      required:
+        - priority
+        - username
+        - host
+        - port
+        - command
+      properties:
+        priority:
+          type: integer
+          description: The lower the number the higher the priority
+          minimum: 0
+        username:
+          type: string
+        host:
+          type: string
+        port:
+          type: integer
+          default: 22
+          minimum: 1
+          maximum: 65535
+        command:
+          type: string
+          description: Command to run on the target host
+
     Error:
       type: object
       required:
