@@ -41,6 +41,12 @@ func accessForbidden(ctx echo.Context) error {
 	})
 }
 
+func badRequest(ctx echo.Context, msg string) error {
+	return ctx.JSON(http.StatusBadRequest, map[string]string{
+		"message": msg,
+	})
+}
+
 // Ping returns a simple JSON payload to test the server
 func (srv *Server) Ping(ctx echo.Context) error {
 	if !isGranted(ctx, auth.RoleAdmin) {
