@@ -4,7 +4,7 @@ CONSOLE_NAME=bin/console
 
 all: $(SERVER_NAME) $(CONSOLE_NAME)
 
-$(SERVER_NAME): vendor cmd/server/main.go pkg/api pkg/auth pkg/db pkg/env pkg/middleware pkg/server
+$(SERVER_NAME): vendor cmd/server/main.go pkg/api pkg/auth pkg/db pkg/env pkg/middleware pkg/server pkg/api/go-deploy.gen.go
 	$(GOCMD) build -o $(SERVER_NAME) cmd/server/main.go
 
 $(CONSOLE_NAME): vendor cmd/console/main.go pkg/db pkg/env
