@@ -15,6 +15,14 @@ import (
 	"testing"
 )
 
+var (
+	adminUser = db.User{
+		Username:    "admin",
+		HashedToken: "admin",
+		Role:        auth.RoleAdmin,
+	}
+)
+
 type ServerTestSuite struct {
 	suite.Suite
 	server *Server
