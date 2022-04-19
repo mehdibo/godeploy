@@ -17,6 +17,20 @@ security:
     - ROLE_ADMIN
 paths:
   /applications:
+    get:
+      description: Get applications
+      operationId: getApplications
+      tags:
+        - Applications
+      responses:
+        '200':
+          description: Collection of applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationCollection'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     post:
       description: Create a new Application
       operationId: addApplication
@@ -68,6 +82,29 @@ components:
       scheme: basic
 
   schemas:
+    ApplicationCollection:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationCollectionItem"
+
+    ApplicationCollectionItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
     NewApplication:
       type: object
       required:
