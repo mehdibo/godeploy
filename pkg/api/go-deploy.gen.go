@@ -8,16 +8,26 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
 
 const (
 	BasicAuthScopes = "BasicAuth.Scopes"
+)
+
+// Defines values for TaskItemTaskType.
+const (
+	TaskItemTaskTypeHttpTask TaskItemTaskType = "HttpTask"
+
+	TaskItemTaskTypeSshTask TaskItemTaskType = "SshTask"
 )
 
 // ApplicationCollection defines model for ApplicationCollection.
@@ -32,6 +42,17 @@ type ApplicationCollectionItem struct {
 	Name        string  `json:"name"`
 }
 
+// ApplicationItem defines model for ApplicationItem.
+type ApplicationItem struct {
+	Description    *string     `json:"description,omitempty"`
+	Id             int         `json:"id"`
+	LastDeployedAt *time.Time  `json:"lastDeployedAt,omitempty"`
+	LatestCommit   *string     `json:"latestCommit,omitempty"`
+	LatestVersion  *string     `json:"latestVersion,omitempty"`
+	Name           string      `json:"name"`
+	Tasks          *[]TaskItem `json:"tasks,omitempty"`
+}
+
 // CreatedApplication defines model for CreatedApplication.
 type CreatedApplication struct {
 	Description *string `json:"description,omitempty"`
@@ -40,6 +61,16 @@ type CreatedApplication struct {
 
 	// Secret used to trigger a deployment, store somewhere safe
 	RawSecret string `json:"rawSecret"`
+}
+
+// HttpTaskItem defines model for HttpTaskItem.
+type HttpTaskItem struct {
+	Body *string `json:"body,omitempty"`
+
+	// An object of Header-name:Value
+	Headers *map[string]interface{} `json:"headers,omitempty"`
+	Method  string                  `json:"method"`
+	Url     string                  `json:"url"`
 }
 
 // NewApplication defines model for NewApplication.
@@ -79,6 +110,28 @@ type NewSshTask struct {
 	Username string `json:"username"`
 }
 
+// SshTaskItem defines model for SshTaskItem.
+type SshTaskItem struct {
+	Command  string `json:"command"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+}
+
+// TaskItem defines model for TaskItem.
+type TaskItem struct {
+	Priority int `json:"priority"`
+
+	// Can either contain HTTP or SSH task
+	Task interface{} `json:"task"`
+
+	// Can be either ssh or http
+	TaskType TaskItemTaskType `json:"taskType"`
+}
+
+// Can be either ssh or http
+type TaskItemTaskType string
+
 // AddApplicationJSONBody defines parameters for AddApplication.
 type AddApplicationJSONBody NewApplication
 
@@ -93,6 +146,9 @@ type ServerInterface interface {
 
 	// (POST /applications)
 	AddApplication(ctx echo.Context) error
+
+	// (GET /applications/{id})
+	GetApplication(ctx echo.Context, id int) error
 
 	// (GET /ping)
 	Ping(ctx echo.Context) error
@@ -122,6 +178,24 @@ func (w *ServerInterfaceWrapper) AddApplication(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.AddApplication(ctx)
+	return err
+}
+
+// GetApplication converts echo context to params.
+func (w *ServerInterfaceWrapper) GetApplication(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BasicAuthScopes, []string{"ROLE_ADMIN"})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetApplication(ctx, id)
 	return err
 }
 
@@ -166,6 +240,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/applications", wrapper.GetApplications)
 	router.POST(baseURL+"/applications", wrapper.AddApplication)
+	router.GET(baseURL+"/applications/:id", wrapper.GetApplication)
 	router.GET(baseURL+"/ping", wrapper.Ping)
 
 }
@@ -173,24 +248,29 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7xXTXPbNhD9Kxi0R1aUnboHnmo7mdidxvFEbn3waDIQuSKREgCLXVpVPfrvnQUpiRSp",
-	"2Jk00QnCx+Lt29234JNMnamcBUsokyfpAStnEcKfP6yqqXBe/wvZG++d58kMMPW6Iu2sTOR5TQVY0qni",
-	"CaHt0nnTjlEYjahtLpwX2j6qUmcykgWoDHy44P7+/mPHAvAcpgUYxSNaVyATieS1zeWGf1G7HE6fV1XZ",
-	"XnzpyhLSBtOTrLyrwJNuvNAEpj/40cNSJvKHeO973NqNR41eExi5ibaIlPdqLRmNh79r7SGTyUNrfr7b",
-	"5RafICU+dtzmAGyP3QEFkdRZZ1pbghw8z1tlYIyzA4jMf9g6BvPSgyLIOmi/Ob5IerWaQeqBhrnVzIsa",
-	"IRPkBHmd5+CFEhlUpVsbsBQJJOdBoDOwKoBHagkyejEPXQCRJIV/jYfwBlZfxUtBVN0F68MSEqVGEm4p",
-	"ru7ubgXjBCRklxEsI31R4t7A6qq9ZJiqnwkAYvEMsELMZlcidcYomwVcvrZfAGvW3PBsAR1NzK5rA+YX",
-	"LluPU77XmQO/rGhsB87Drp/47uRPVdad5NkDMECFy0Zvqbx2XtN6eM1dAaJ0K/CCChC2Not2WOi8aIe7",
-	"05E02mpTG5lMo5H6qX35fHl3rTWIm4NHON3GZUBpG+qhS5fNQpsCwtngBCmfA4nCIQ0rL5JhfpQ659uq",
-	"X6q6JJmcnkbSqH8aGn45O3t11qHlZIyW78U+gn+ZwnZM7g61FLQORzt6h2HhcoS0ZgMzrp8mHBcKdcpt",
-	"ctce+cyCZ/d8s8DI0CG5BzdRtKTSwDAYpUuZSANFpicLV9u1+jXnyUnqzFYLE/mO18VFWG9zp7GMSRzn",
-	"mop6wQfiYGfhYuamT/tbJ14Hdeb2rwQ5VwoqFAUpAYucM32ZC/nUSnvQX86uRuGF2ksuykiWOgWLIQpb",
-	"wNd3A5yuAouu9ilMnM/j9hDGvJclSFMJXaQyko/gscF/MplOpryNrahKy0S+mkwnpxw9RUWIR9yDlTzJ",
-	"fKx7vQU6xM81Fv5cZ82G8/567/F1Op1uowg22O9Yiz9h02j2r6UvftQ02XJY4NtV1sYefN5MKkfO8h7u",
-	"eShlHKGgeVAIJSysRLd9HlJxnmX95TY7Llpt/19IOGjhm37pkq9h8w1DMPK4GuG/syzS5oTAOk0BcVmX",
-	"5fpzUdhEMq5Yk45l5Aeg2lsuS9SmKkH8Nnt/I7YehycWIAm9DOKI4B/Bcxn72lq2exi122byqyjrNx4D",
-	"iCqHXlOQlQvXDHX3UDwHbN46m+/846L+eXpyLE47L+LhV8/206OVZpk89ET5QX54//ubj+ev313fyPlm",
-	"zjuZOwwbG3GKWUs2881/AQAA//8TBLQWcA0AAA==",
+	"H4sIAAAAAAAC/8xYT3PUuBP9Kir9fkczHgLswacNgYVsLYEiWTikUpTG7rEFluSV2mRnU/7uWy1pJvbY",
+	"M5MQoDYnR39ar18/dbfmhudGNUaDRsezG27BNUY78P+cGfzNtLp4aa2xNFCAy61sUBrNM/4enGltDkwb",
+	"ZEtayLuE/6lFi5Wx8h/YtfG4xQo0ylzQAJN6aayK344p6ZzUJTOWSf1V1LLgCa9AFGA9qo8fP37qWQAa",
+	"c3kFStAXrhrgGXdopS55R39JnPa7j5umjgefmLqGPGC64Y01DViUwXWJoIYf/7ew5Bn/X3pLWBrtppNG",
+	"TxEUERIRCWvFihMaC3+10kLBs8to/mqzyiw+Q460bbfNEdgBuyMKEi6L3rDUCCVYGtdCwRRnWxCJf7/0",
+	"AMzvC64WDl9AU5sVFMdIa4JKeMYLgfAIpQKejO3VAsHhiVFK4uSBYcEHsG4XpB28JByF+3J3VVwI9+Vu",
+	"ItjL8IkFgVD0iP7hCki4FdfnkFvA8e0N46x1UDA0DK0sS7BMsMJHS4HGhDk0FpgzCq4roC+xnIjWTh76",
+	"ANa0T3HzGrHZ0DxiZWGK1aR3vWyylZk0C8aZWbLXftUjApR9EHXbc+AWgQKsTDF5SmvrgWzp/0MURHNh",
+	"85THZ3D9ICVUkbEp51ktXfD84uIdI1jg0FGQHWgCdSfZn8H1Oixj5e+RnHPVAWAVOz9/zXKjlNCFx2Vb",
+	"fQ9Y5+GEg/dx51Xsu/ZfU1tjpbESV+NjLipgtbkGy7ACplu1iJ+VLKv4udmdcCW1VK3i2TyZyBhR1PtV",
+	"3Ld2B0Gv4zKiNIZ67NJJmIgSYEZ7J1DYEpBVxuFUZfDjk9QZG/PcUrQ18uzoKOFK/B1o+OXZsyfPerQ8",
+	"nqLlZ7HvwN6tavdMbjZFCqLDyYbeqbDEmEwn1l5c7s/yQ7z6Jld2+9GP2hgWRk1uSU9oBhIpdLnRKKQO",
+	"6dJYn538poQbDW+XPLvcn5P6JHfJ/rWDUtddRXwXHvUUxgWsYTpXETrK/DzhoEldl5vSyTex7pF3WFSb",
+	"wyNPY+IppUPe0vpz8iFQ/lw4mVP7vmnbac+CRm/vrIfqO3d6GwTFaRS51w8oIWuecQVVIWcL0+qV+LWk",
+	"wVlu1LqDyPgbmmfP/XzMP8Gyy9K0lFi1C9qQejsLk1LIhzS+Mix0oPQsEQyNqRlWAn05Au0o7wxLpc9J",
+	"sSHyXQtlqNAXMXFbth1PeC1z0M4Hbw349GKE0zSgwytrZmyZxk0upbUkAYk19JHyhH9dd7b88Ww+m9My",
+	"siIayTP+ZDafHdG1EVj5eKQDWNkNL6d6vleA2/jpHoW2vwgLjofzg5fk0Xy+jiJob79nLf3sQrNy+4q7",
+	"92MrqGW7SKxnqb4O4HcJfzp/vOukDfR0/Jjt/MUrHV2HgcdXPsW5CfJCA88E03DN+s3bNonHRTGcjrp6",
+	"HjuL70LfVgPZDe842ha6Hxi8icfMROR60ywPO5hr8xycW7Z1vdoXhS4Zajq9kUV3V2Ef0LW/OFYoQN/P",
+	"Xd7swX36gjpTGqW7dpuW/CNnSHgy/v1iU4a6q59zlUJZ2R8KGR+z33p1aOfTwzuHPzsdCHVDdWpXdN8D",
+	"tlZT7nZSNTWw38/fnrH1Sf71Cg6ZXPouzIH9CpZyvW21JrvbangXBh8Uj2EHosA5UcKg++SN8ceMa/F2",
+	"hR1F653R5ca/B2W5rl+/vdR7lfuSv3/7x8tPxy/enJ7xK5Jo4C7ciVDBUio43VX3bwAAAP//aAXbqGIU",
+	"AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

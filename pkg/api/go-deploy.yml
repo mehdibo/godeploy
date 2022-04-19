@@ -50,6 +50,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreatedApplication'
 
+  /applications/{id}:
+    get:
+      description: Get application
+      operationId: getApplication
+      tags:
+        - Applications
+      parameters:
+        - name: id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '200':
+          description: Application item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationItem"
   /ping:
     get:
       description: Returns a simple JSON response to test if the server is running
@@ -75,6 +99,9 @@ components:
         WWW_Authenticate:
           schema:
             type: string
+
+    NotFoundError:
+      description: Resource not found
 
   securitySchemes:
     BasicAuth:
@@ -103,6 +130,85 @@ components:
         name:
           type: string
         description:
+          type: string
+
+    ApplicationItem:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        latestVersion:
+          type: string
+        latestCommit:
+          type: string
+        lastDeployedAt:
+          type: string
+          format: date-time
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskItem'
+
+    TaskItem:
+      type: object
+      required:
+        - priority
+        - taskType
+        - task
+      properties:
+        priority:
+          type: integer
+        taskType:
+          type: string
+          description: Can be either ssh or http
+          enum:
+            - HttpTask
+            - SshTask
+        task:
+          description: Can either contain HTTP or SSH task
+          oneOf:
+            - $ref: '#/components/schemas/SshTaskItem'
+            - $ref: '#/components/schemas/HttpTaskItem'
+
+    SshTaskItem:
+      type: object
+      required:
+        - username
+        - host
+        - port
+        - command
+      properties:
+        username:
+          type: string
+        host:
+          type: string
+        port:
+          type: integer
+        command:
+          type: string
+
+    HttpTaskItem:
+      type: object
+      required:
+        - method
+        - url
+      properties:
+        method:
+          type: string
+        url:
+          type: string
+          format: url
+        headers:
+          type: object
+          description: "An object of Header-name:Value"
+        body:
           type: string
 
     NewApplication:
