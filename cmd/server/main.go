@@ -74,10 +74,7 @@ func main() {
 
 	g.Use(mdl.BasicAuthWithConfig(mdl.BasicAuthConfig{
 		Skipper: func(c echo.Context) bool {
-			if c.Path() == "/api/swagger.json" {
-				return true
-			}
-			return false
+			return c.Path() == "/api/swagger.json"
 		},
 		Validator: srv.ValidateBasicAuth,
 		Realm:     "",
