@@ -80,6 +80,7 @@ func (s *ServerTestSuite) TearDownTest() {
 func prepareRequest(method string, uri string, body io.Reader, authUser *db.User) (echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()
 	req := httptest.NewRequest(method, uri, body)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	if authUser != nil {
