@@ -16,6 +16,9 @@ jobs:
           fetch-depth: 1
       - uses: dominikh/staticcheck-action@v1.2.0
       - uses: golangci/golangci-lint-action@v3
+      - uses: securego/gosec@master
+        with:
+          args: ./...
 
   test:
     runs-on: ubuntu-latest
