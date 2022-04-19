@@ -8,14 +8,28 @@ on:
 
 jobs:
 
-  code_analysis:
+  staticcheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
       - uses: dominikh/staticcheck-action@v1.2.0
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - uses: golangci/golangci-lint-action@v3
+
+  gosec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - uses: securego/gosec@master
         env:
           GOROOT: ''
