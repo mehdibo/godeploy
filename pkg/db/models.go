@@ -31,13 +31,13 @@ type User struct {
 
 type Application struct {
 	gorm.Model
-	Name           string
+	Name           string `validate:"required"`
 	Description    string
 	Secret         string
 	LatestVersion  string
 	LatestCommit   string
 	LastDeployedAt time.Time
-	Tasks          []Task
+	Tasks          []Task `validate:"required"`
 }
 
 type Task struct {
@@ -61,8 +61,8 @@ type SshTask struct {
 type HttpTask struct {
 	gorm.Model
 	TaskId  uint
-	Method  string
-	Url     string
+	Method  string `validate:"required"`
+	Url     string `validate:"required,url"`
 	Headers datatypes.JSONMap
 	Body    string
 }
