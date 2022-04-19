@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"io"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -155,29 +154,6 @@ func prepareRequest(method string, uri string, body io.Reader, authUser *db.User
 		c.Set(auth.UserKey, *authUser)
 	}
 	return c, rec
-}
-
-func (s *ServerTestSuite) TestPing() {
-	s.T().Run("unauthenticated", func(t *testing.T) {
-		ctx, rec := prepareRequest(http.MethodGet, "/api/ping", nil, nil)
-		if assert.NoError(t, s.server.Ping(ctx)) {
-			assert.Equal(t, http.StatusForbidden, rec.Code)
-		}
-
-	})
-	s.T().Run("authenticated admin", func(t *testing.T) {
-		adminUser := db.User{
-			Username:    "admin",
-			HashedToken: "admin",
-			Role:        auth.RoleAdmin,
-		}
-		ctx, rec := prepareRequest(http.MethodGet, "/api/ping", nil, &adminUser)
-		if assert.NoError(t, s.server.Ping(ctx)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, "{\"message\":\"pong\"}\n", rec.Body.String())
-		}
-
-	})
 }
 
 func TestServerTestSuite(t *testing.T) {

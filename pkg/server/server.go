@@ -41,16 +41,6 @@ func accessForbidden(ctx echo.Context) error {
 	})
 }
 
-// Ping returns a simple JSON payload to test the server
-func (srv *Server) Ping(ctx echo.Context) error {
-	if !isGranted(ctx, auth.RoleAdmin) {
-		return accessForbidden(ctx)
-	}
-	return ctx.JSON(http.StatusOK, map[string]string{
-		"message": "pong",
-	})
-}
-
 // ValidateBasicAuth validate basic auth credentials, used with built-in middleware
 func (srv *Server) ValidateBasicAuth(username string, rawToken string, ctx echo.Context) (bool, error) {
 	var user db.User

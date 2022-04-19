@@ -74,23 +74,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationItem"
-  /ping:
-    get:
-      description: Returns a simple JSON response to test if the server is running
-      operationId: ping
-      responses:
-        '200':
-          description: Pong response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: "pong"
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
 components:
   responses:
     UnauthorizedError:
