@@ -81,6 +81,16 @@ func loadFixtures(dbConn *gorm.DB) {
 						Url:    "https://example.com",
 					},
 				},
+				{
+					Priority: 1,
+					TaskType: db.TaskTypeSsh,
+					SshTask: &db.SshTask{
+						Username: "spoody",
+						Host:     "localhost",
+						Port:     22,
+						Command:  "/update.sh",
+					},
+				},
 			},
 		},
 		{
