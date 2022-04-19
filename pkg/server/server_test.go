@@ -59,8 +59,45 @@ func loadFixtures(dbConn *gorm.DB) {
 			Role:        auth.RoleAdmin,
 		},
 	}
+	applications := []db.Application{
+		{
+			Name:        "Test App 1",
+			Description: "Some app to test with",
+			Secret:      auth.HashToken("deploy_token"),
+			Tasks: []db.Task{
+				{
+					Priority: 0,
+					TaskType: db.TaskTypeHttp,
+					HttpTask: &db.HttpTask{
+						Method: "GET",
+						Url:    "https://example.com",
+					},
+				},
+			},
+		},
+		{
+			Name:        "Test App 2",
+			Description: "Some app to test with",
+			Secret:      auth.HashToken("deploy_token"),
+			Tasks: []db.Task{
+				{
+					Priority: 0,
+					TaskType: db.TaskTypeSsh,
+					SshTask: &db.SshTask{
+						Username: "spoody",
+						Host:     "localhost",
+						Port:     22,
+						Command:  "/update.sh",
+					},
+				},
+			},
+		},
+	}
 	for _, user := range users {
 		dbConn.Create(&user)
+	}
+	for _, app := range applications {
+		dbConn.Create(&app)
 	}
 }
 
