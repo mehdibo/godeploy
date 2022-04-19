@@ -9,7 +9,7 @@ import (
 	"sort"
 )
 
-func getHttpTasks(rawTasks []api.NewHttpTask) []db.Task {
+func getHttpTasks(ctx echo.Context, rawTasks []api.NewHttpTask) ([]db.Task, error) {
 	var tasks []db.Task
 	var prevPriority = -100
 	for _, httpTask := range rawTasks {
@@ -35,12 +35,19 @@ func getHttpTasks(rawTasks []api.NewHttpTask) []db.Task {
 		task.TaskType = db.TaskTypeHttp
 		task.HttpTask = &newHttpTask
 
+		if err := ctx.Validate(newHttpTask); err != nil {
+			return nil, err
+		}
+		if err := ctx.Validate(task); err != nil {
+			return nil, err
+		}
+
 		tasks = append(tasks, task)
 	}
-	return tasks
+	return tasks, nil
 }
 
-func getSshTasks(rawTasks []api.NewSshTask) []db.Task {
+func getSshTasks(ctx echo.Context, rawTasks []api.NewSshTask) ([]db.Task, error) {
 	var tasks []db.Task
 	var prevPriority = -100
 	for _, sshTask := range rawTasks {
@@ -61,9 +68,16 @@ func getSshTasks(rawTasks []api.NewSshTask) []db.Task {
 		task.TaskType = db.TaskTypeSsh
 		task.SshTask = &newSshTask
 
+		if err := ctx.Validate(newSshTask); err != nil {
+			return nil, err
+		}
+		if err := ctx.Validate(task); err != nil {
+			return nil, err
+		}
+
 		tasks = append(tasks, task)
 	}
-	return tasks
+	return tasks, nil
 }
 
 func (srv *Server) AddApplication(ctx echo.Context) error {
@@ -73,10 +87,6 @@ func (srv *Server) AddApplication(ctx echo.Context) error {
 	newApp := new(api.NewApplication)
 	if err := ctx.Bind(newApp); err != nil {
 		return err
-	}
-	// Make sure at least one task exists
-	if newApp.HttpTasks == nil && newApp.SshTasks == nil {
-		return badRequest(ctx, "At least one task must exist.")
 	}
 	// Convert API structs to DB models
 	application := new(db.Application)
@@ -96,12 +106,18 @@ func (srv *Server) AddApplication(ctx echo.Context) error {
 	var tasks []db.Task
 
 	if newApp.HttpTasks != nil {
-		newHttpTasks := getHttpTasks(*(newApp.HttpTasks))
+		newHttpTasks, err := getHttpTasks(ctx, *(newApp.HttpTasks))
+		if err != nil {
+			return err
+		}
 		tasks = append(tasks, newHttpTasks...)
 	}
 
 	if newApp.SshTasks != nil {
-		newSshTasks := getSshTasks(*(newApp.SshTasks))
+		newSshTasks, err := getSshTasks(ctx, *(newApp.SshTasks))
+		if err != nil {
+			return err
+		}
 		tasks = append(tasks, newSshTasks...)
 	}
 
@@ -109,6 +125,10 @@ func (srv *Server) AddApplication(ctx echo.Context) error {
 		return tasks[i].Priority < tasks[j].Priority
 	})
 	application.Tasks = tasks
+
+	if err := ctx.Validate(application); err != nil {
+		return err
+	}
 
 	srv.db.Create(&application)
 
