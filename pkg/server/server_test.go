@@ -39,9 +39,13 @@ func (s *ServerTestSuite) getDb() *gorm.DB {
 	// Make sure db is clean
 	tables := []string{
 		"users",
+		"http_tasks",
+		"ssh_tasks",
+		"tasks",
+		"applications",
 	}
 	for _, table := range tables {
-		dbConn.Exec("TRUNCATE " + table + " RESTART IDENTITY")
+		dbConn.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE")
 	}
 	return dbConn
 }
