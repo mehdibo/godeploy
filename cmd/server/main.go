@@ -9,6 +9,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/env"
 	"github.com/mehdibo/go_deploy/pkg/middleware"
 	"github.com/mehdibo/go_deploy/pkg/server"
+	"github.com/mehdibo/go_deploy/pkg/validator"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
@@ -59,6 +60,8 @@ func main() {
 
 	e := echo.New()
 
+	e.Validator = validator.NewValidator()
+
 	e.Static("/assets", "swagger-ui/assets")
 	e.File("/docs", "swagger-ui/index.html")
 
@@ -79,7 +82,7 @@ func main() {
 		Validator: srv.ValidateBasicAuth,
 		Realm:     "",
 	}))
-	
+
 	g.GET("/swagger.json", func(ctx echo.Context) error {
 		errMsg := map[string]string{
 			"message": "Something went wrong",
