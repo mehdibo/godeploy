@@ -17,6 +17,8 @@ jobs:
       - uses: dominikh/staticcheck-action@v1.2.0
       - uses: golangci/golangci-lint-action@v3
       - uses: securego/gosec@master
+        env:
+          GOROOT: ''
         with:
           args: ./...
 
