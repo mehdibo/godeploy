@@ -5,6 +5,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/auth"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
+	"github.com/mehdibo/go_deploy/pkg/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -79,6 +80,7 @@ func (s *ServerTestSuite) TearDownTest() {
 
 func prepareRequest(method string, uri string, body io.Reader, authUser *db.User) (echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()
+	e.Validator = validator.NewValidator()
 	req := httptest.NewRequest(method, uri, body)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
