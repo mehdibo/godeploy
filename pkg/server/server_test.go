@@ -45,6 +45,10 @@ func (s *ServerTestSuite) getDb() *gorm.DB {
 	if err != nil {
 		s.T().Fatalf("Couldn't connect to test database: %s", err.Error())
 	}
+	err = db.AutoMigrate(dbConn)
+	if err != nil {
+		s.T().Fatalf("Couldn't migrate database: %s", err.Error())
+	}
 	// Make sure db is clean
 	tables := []string{
 		"users",
@@ -59,7 +63,7 @@ func (s *ServerTestSuite) getDb() *gorm.DB {
 	return dbConn
 }
 
-func loadFixtures(dbConn *gorm.DB) {
+func loadFixtures(dbConn *gorm.DB) error {
 	users := []db.User{
 		{
 			Username:    "admin",
@@ -112,16 +116,23 @@ func loadFixtures(dbConn *gorm.DB) {
 		},
 	}
 	for _, user := range users {
-		dbConn.Create(&user)
+		res := dbConn.Create(&user)
+		if res.Error != nil {
+			return res.Error
+		}
 	}
 	for _, app := range applications {
-		dbConn.Create(&app)
+		res := dbConn.Create(&app)
+		if res.Error != nil {
+			return res.Error
+		}
 	}
+	return nil
 }
 
 func (s *ServerTestSuite) SetupSuite() {
 	s.dbConn = s.getDb()
-	loadFixtures(s.dbConn)
+	assert.NoError(s.T(), loadFixtures(s.dbConn))
 }
 
 func (s *ServerTestSuite) SetupTest() {
