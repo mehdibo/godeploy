@@ -14,7 +14,7 @@ const (
 )
 
 func (t TaskType) String() string {
-	return [...]string{"SshTask", "HttpTask"}[t-1]
+	return [...]string{"SshTask", "HttpTask"}[t]
 }
 
 func (t TaskType) EnumIndex() int {
