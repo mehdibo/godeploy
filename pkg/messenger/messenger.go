@@ -98,6 +98,17 @@ func (m *Messenger) CountMessages(queue string) (int, error) {
 	return q.Messages, nil
 }
 
+// PurgeQueue purge non delivered messages in a queue
+func (m *Messenger) PurgeQueue(queue string) error {
+	ch, err := m.conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	_, err = ch.QueuePurge(queue, true)
+	return err
+}
+
 func (m *Messenger) Close() error {
 	return m.conn.Close()
 }
