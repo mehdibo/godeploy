@@ -1,11 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/auth"
 	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/go_deploy/pkg/messenger"
 	"net/http"
 )
 
@@ -29,6 +31,15 @@ func (srv *Server) DeployApplication(ctx echo.Context, id int) error {
 		return badRequest(ctx, "This version is already deployed")
 	}
 	// Add deployment to queue
-
-	return nil
+	body, err := json.Marshal(map[string]uint{
+		"id": app.ID,
+	})
+	if err != nil {
+		return err
+	}
+	err = srv.msn.Publish(messenger.APP_DEPLOY_QUEUE, body)
+	if err != nil {
+		return err
+	}
+	return ctx.NoContent(http.StatusOK)
 }
