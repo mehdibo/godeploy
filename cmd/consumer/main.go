@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 	"gorm.io/gorm"
+	"os"
 	"time"
 )
 
@@ -53,6 +54,21 @@ func getMessenger() (*messenger.Messenger, error) {
 	return messenger.NewMessenger("amqp://" + brUser + ":" + brPass + "@" + brHost + ":" + brPort + "/")
 }
 
+func getDeployer() (*deployer.Deployer, error) {
+	sshPrivKey := env.Get("SSH_PRIVATE_KEY")
+	sshKnownHosts := env.Get("SSH_KNOWN_HOSTS_FILE")
+	sshPassPhrase := env.GetDefault("SSH_PASSPHRASE", "")
+	if sshPrivKey == "" {
+		return nil, errors.New("required SSH config is not set")
+	}
+	f, err := os.OpenFile(sshKnownHosts, os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+	_ = f.Close()
+	return deployer.NewDeployer(sshPrivKey, sshPassPhrase, sshKnownHosts), nil
+}
+
 func ackMsg(d amqp.Delivery) {
 	log.Info("Acknowledging message")
 	err := d.Ack(false)
@@ -73,6 +89,11 @@ func main() {
 	}
 	log.SetLevel(logLvl)
 
+	dply, err := getDeployer()
+	if err != nil {
+		log.Fatalf("Couldn't get deployer : %s", err.Error())
+	}
+
 	log.Info("Connecting to database")
 	orm, err := getDb()
 	if err != nil {
@@ -84,8 +105,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't get messenger %s", err.Error())
 	}
-
-	dply := deployer.NewDeployer()
 
 	msgs, ch, err := msn.GetMessages(messenger.AppDeployQueue)
 	if err != nil {
