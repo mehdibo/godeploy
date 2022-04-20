@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/auth"
@@ -22,7 +21,6 @@ func (srv *Server) DeployApplication(ctx echo.Context, id int) error {
 		return err
 	}
 	// Verify secret
-	fmt.Println(app.Secret)
 	if app.Secret != auth.HashToken(payload.Secret) {
 		return accessForbidden(ctx)
 	}
