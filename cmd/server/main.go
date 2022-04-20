@@ -75,6 +75,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't get messenger %s", err.Error())
 	}
+	defer msn.Close()
 	srv := server.NewServer(orm, msn)
 
 	e := echo.New()

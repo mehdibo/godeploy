@@ -97,3 +97,7 @@ func (m *Messenger) CountMessages(queue string) (int, error) {
 	}
 	return q.Messages, nil
 }
+
+func (m *Messenger) Close() error {
+	return m.conn.Close()
+}
