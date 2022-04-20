@@ -54,6 +54,7 @@ func getSshTasks(ctx echo.Context, rawTasks []api.NewSshTask) ([]db.Task, error)
 		var task db.Task
 		var newSshTask db.SshTask
 
+		newSshTask.ServerFingerprint = sshTask.Fingerprint
 		newSshTask.Username = sshTask.Username
 		newSshTask.Host = sshTask.Host
 		newSshTask.Port = uint(sshTask.Port)
