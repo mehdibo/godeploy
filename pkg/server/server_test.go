@@ -63,7 +63,7 @@ func (s *ServerTestSuite) getDb() *gorm.DB {
 	return dbConn
 }
 
-func (s *ServerTestSuite) getMessenger() messenger.Messenger {
+func (s *ServerTestSuite) getMessenger() *messenger.Messenger {
 	// Load broker credentials
 	brHost := env.Get("AMQP_HOST")
 	brUser := env.Get("AMQP_USER")
@@ -153,7 +153,7 @@ func (s *ServerTestSuite) SetupSuite() {
 
 func (s *ServerTestSuite) SetupTest() {
 	s.tx = s.dbConn.Begin()
-	s.server = NewServer(s.tx)
+	s.server = NewServer(s.tx, s.getMessenger())
 }
 
 func (s *ServerTestSuite) TearDownTest() {
