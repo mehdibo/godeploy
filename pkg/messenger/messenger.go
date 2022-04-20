@@ -83,3 +83,17 @@ func (m *Messenger) GetMessages(queue string) (<-chan amqp.Delivery, *amqp.Chann
 	}
 	return msgs, ch, nil
 }
+
+// CountMessages get the total messages in a queue
+func (m *Messenger) CountMessages(queue string) (int, error) {
+	ch, err := m.conn.Channel()
+	if err != nil {
+		return 0, err
+	}
+	defer ch.Close()
+	q, err := ch.QueueInspect(queue)
+	if err != nil {
+		return 0, err
+	}
+	return q.Messages, nil
+}
