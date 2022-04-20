@@ -28,6 +28,7 @@ type ServerTestSuite struct {
 	server *Server
 	tx     *gorm.DB
 	dbConn *gorm.DB
+	msn    *messenger.Messenger
 }
 
 func (s *ServerTestSuite) getDb() *gorm.DB {
@@ -153,10 +154,12 @@ func (s *ServerTestSuite) SetupSuite() {
 
 func (s *ServerTestSuite) SetupTest() {
 	s.tx = s.dbConn.Begin()
-	s.server = NewServer(s.tx, s.getMessenger())
+	s.msn = s.getMessenger()
+	s.server = NewServer(s.tx, s.msn)
 }
 
 func (s *ServerTestSuite) TearDownTest() {
+	_ = s.msn.Close()
 	s.tx.Rollback()
 }
 
