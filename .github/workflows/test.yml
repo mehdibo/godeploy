@@ -63,6 +63,11 @@ jobs:
           "postgresql user": "test_user"
           "postgresql password": "test_pass"
 
+      - uses: getong/rabbitmq-action@v1.2
+        with:
+          rabbitmq user: 'guest'
+          rabbitmq password: 'guest'
+
       - name: Install packages
         run: make vendor
 
@@ -72,4 +77,7 @@ jobs:
           DB_USER: test_user
           DB_PASS: test_pass
           DB_NAME: test_db
+          AMQP_HOST: localhost
+          AMQP_USER: guest
+          AMQP_PASS: guest
         run: make test
