@@ -35,10 +35,18 @@ func isGranted(ctx echo.Context, role string) bool {
 	return false
 }
 
-func accessForbidden(ctx echo.Context) error {
-	return ctx.JSON(http.StatusForbidden, map[string]string{
-		"message": "Access forbidden.",
+func errorMsg(ctx echo.Context, code int, msg string) error {
+	return ctx.JSON(code, map[string]string{
+		"message": msg,
 	})
+}
+
+func accessForbidden(ctx echo.Context) error {
+	return errorMsg(ctx, http.StatusForbidden, "Access forbidden.")
+}
+
+func badRequest(ctx echo.Context, msg string) error {
+	return errorMsg(ctx, http.StatusBadRequest, msg)
 }
 
 // ValidateBasicAuth validate basic auth credentials, used with built-in middleware
