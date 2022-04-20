@@ -159,7 +159,14 @@ func (s *ServerTestSuite) SetupTest() {
 }
 
 func (s *ServerTestSuite) TearDownTest() {
-	_ = s.msn.Close()
+	err := s.msn.PurgeQueue(messenger.AppDeployQueue)
+	if err != nil {
+		s.T().Error(err)
+	}
+	err = s.msn.Close()
+	if err != nil {
+		s.T().Error(err)
+	}
 	s.tx.Rollback()
 }
 
