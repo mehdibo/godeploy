@@ -30,7 +30,8 @@ func (srv *Server) DeployApplication(ctx echo.Context, id int) error {
 	}
 	// Add deployment to queue
 	body, err := json.Marshal(map[string]uint{
-		"id": app.ID,
+		"id":      app.ID,
+		"attempt": 0,
 	})
 	if err != nil {
 		return err
