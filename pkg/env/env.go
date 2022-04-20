@@ -22,6 +22,7 @@ func GetDefault(key string, defaultValue string) string {
 
 // LoadDotEnv load .env files in the following order:
 // .env, .env.local, .env.$APP_ENV, .env.$APP_ENV.local
+// TODO: check for required values
 func LoadDotEnv() {
 	err := godotenv.Load(".env")
 	if err != nil {
