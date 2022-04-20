@@ -74,14 +74,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationItem"
+
+  /applications/{id}/deploy:
+    post:
+      description: Trigger deployment
+      operationId: deployApplication
+      tags:
+        - Applications
+      parameters:
+        - name: id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDeployment'
+      responses:
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '205':
+          description: Deployment queued
+
 components:
   responses:
+    BadRequest:
+      description: The request sent is invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
     UnauthorizedError:
       description: Authentication information is missing or invalid
-      headers:
-        WWW_Authenticate:
-          schema:
-            type: string
 
     NotFoundError:
       description: Resource not found
@@ -92,6 +129,21 @@ components:
       scheme: basic
 
   schemas:
+    TriggerDeployment:
+      type: object
+      required:
+        - secret
+      properties:
+        secret:
+          type: string
+          description: Secret obtained when creating the application
+        version:
+          type: string
+          description: The version being deployed
+        commit:
+          type: string
+          description: The deployed commit's hash
+
     ApplicationCollection:
       type: object
       required:

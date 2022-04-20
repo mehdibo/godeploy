@@ -132,11 +132,34 @@ type TaskItem struct {
 // Can be either ssh or http
 type TaskItemTaskType string
 
+// TriggerDeployment defines model for TriggerDeployment.
+type TriggerDeployment struct {
+	// The deployed commit's hash
+	Commit *string `json:"commit,omitempty"`
+
+	// Secret obtained when creating the application
+	Secret string `json:"secret"`
+
+	// The version being deployed
+	Version *string `json:"version,omitempty"`
+}
+
+// BadRequest defines model for BadRequest.
+type BadRequest struct {
+	Message string `json:"message"`
+}
+
 // AddApplicationJSONBody defines parameters for AddApplication.
 type AddApplicationJSONBody NewApplication
 
+// DeployApplicationJSONBody defines parameters for DeployApplication.
+type DeployApplicationJSONBody TriggerDeployment
+
 // AddApplicationJSONRequestBody defines body for AddApplication for application/json ContentType.
 type AddApplicationJSONRequestBody AddApplicationJSONBody
+
+// DeployApplicationJSONRequestBody defines body for DeployApplication for application/json ContentType.
+type DeployApplicationJSONRequestBody DeployApplicationJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -149,6 +172,9 @@ type ServerInterface interface {
 
 	// (GET /applications/{id})
 	GetApplication(ctx echo.Context, id int) error
+
+	// (POST /applications/{id}/deploy)
+	DeployApplication(ctx echo.Context, id int) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -196,6 +222,24 @@ func (w *ServerInterfaceWrapper) GetApplication(ctx echo.Context) error {
 	return err
 }
 
+// DeployApplication converts echo context to params.
+func (w *ServerInterfaceWrapper) DeployApplication(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BasicAuthScopes, []string{"ROLE_ADMIN"})
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.DeployApplication(ctx, id)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -227,33 +271,36 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/applications", wrapper.GetApplications)
 	router.POST(baseURL+"/applications", wrapper.AddApplication)
 	router.GET(baseURL+"/applications/:id", wrapper.GetApplication)
+	router.POST(baseURL+"/applications/:id/deploy", wrapper.DeployApplication)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
