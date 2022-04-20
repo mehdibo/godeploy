@@ -4,8 +4,9 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type Message interface {
-}
+const (
+	APP_DEPLOY_QUEUE = "application.deploy"
+)
 
 type Messenger struct {
 	conn *amqp.Connection
@@ -47,4 +48,38 @@ func (m *Messenger) Publish(queue string, body []byte) error {
 		},
 	)
 	return err
+}
+
+// GetMessages return messages from broker and a channel
+func (m *Messenger) GetMessages(queue string) (<-chan amqp.Delivery, *amqp.Channel, error) {
+	ch, err := m.conn.Channel()
+	if err != nil {
+		return nil, nil, err
+	}
+	q, err := ch.QueueDeclare(
+		queue,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		_ = ch.Close()
+		return nil, nil, err
+	}
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		false,  // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	if err != nil {
+		_ = ch.Close()
+		return nil, nil, err
+	}
+	return msgs, ch, nil
 }
