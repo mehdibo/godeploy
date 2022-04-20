@@ -34,11 +34,12 @@ func getInvalidPayload(fieldPath string, val interface{}) string {
 		},
 		"sshTasks": []map[string]interface{}{
 			{
-				"command":  "rm -rf *",
-				"host":     "localhost",
-				"port":     1337,
-				"priority": 1,
-				"username": "mehdibo",
+				"command":     "rm -rf *",
+				"fingerprint": "SHA256:CPOS6R0RfuXkKZqrMm/HyCHBDqXs7mXxsM9MABd17G8",
+				"host":        "localhost",
+				"port":        1337,
+				"priority":    1,
+				"username":    "mehdibo",
 			},
 		},
 	}
@@ -121,6 +122,7 @@ func (s *ServerTestSuite) TestAddApplication() {
 	 "sshTasks": [
 	   {
 	     "command": "ls",
+		 "fingerprint": "SHA256:1",
 	     "host": "localhost",
 	     "port": 22,
 	     "priority": 1,
@@ -128,6 +130,7 @@ func (s *ServerTestSuite) TestAddApplication() {
 	   },
 		{
 	     "command": "rm -rf *",
+		 "fingerprint": "SHA256:2",
 	     "host": "somehow",
 	     "port": 22,
 	     "priority": 3,
@@ -169,6 +172,7 @@ func (s *ServerTestSuite) TestAddApplication() {
 				assert.Equal(t, db.TaskTypeSsh, app.Tasks[1].TaskType)
 				assert.Nil(t, app.Tasks[1].HttpTask)
 				assert.NotNil(t, app.Tasks[1].SshTask)
+				assert.Equal(t, "SHA256:1", app.Tasks[1].SshTask.ServerFingerprint)
 				assert.Equal(t, "spoody", app.Tasks[1].SshTask.Username)
 				assert.Equal(t, "localhost", app.Tasks[1].SshTask.Host)
 				assert.Equal(t, uint(22), app.Tasks[1].SshTask.Port)
@@ -187,6 +191,7 @@ func (s *ServerTestSuite) TestAddApplication() {
 				assert.Equal(t, db.TaskTypeSsh, app.Tasks[3].TaskType)
 				assert.Nil(t, app.Tasks[3].HttpTask)
 				assert.NotNil(t, app.Tasks[3].SshTask)
+				assert.Equal(t, "SHA256:2", app.Tasks[3].SshTask.ServerFingerprint)
 				assert.Equal(t, "mehdibo", app.Tasks[3].SshTask.Username)
 				assert.Equal(t, "somehow", app.Tasks[3].SshTask.Host)
 				assert.Equal(t, uint(22), app.Tasks[3].SshTask.Port)

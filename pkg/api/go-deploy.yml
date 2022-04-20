@@ -325,11 +325,16 @@ components:
         - host
         - port
         - command
+        - fingerprint
       properties:
         priority:
           type: integer
           description: The lower the number the higher the priority
           minimum: 0
+        fingerprint:
+          type: string
+          description: SHA256 server fingerprint
+          format: "SHA256:xxxxxxx/xxxxxxx"
         username:
           type: string
         host:
