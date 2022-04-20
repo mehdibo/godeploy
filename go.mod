@@ -10,6 +10,7 @@ require (
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.1
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.3
