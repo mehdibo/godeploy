@@ -7,6 +7,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/api"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
+	"github.com/mehdibo/go_deploy/pkg/messenger"
 	"github.com/mehdibo/go_deploy/pkg/middleware"
 	"github.com/mehdibo/go_deploy/pkg/server"
 	"github.com/mehdibo/go_deploy/pkg/validator"
@@ -39,6 +40,18 @@ func getDb() (*gorm.DB, error) {
 	return dbConn, nil
 }
 
+func getMessenger() (*messenger.Messenger, error) {
+	// Load broker credentials
+	brHost := env.Get("AMQP_HOST")
+	brUser := env.Get("AMQP_USER")
+	brPass := env.Get("AMQP_PASS")
+	brPort := env.GetDefault("AMQP_PORT", "5672")
+	if brHost == "" || brUser == "" || brPass == "" {
+		return nil, errors.New("required broker credentials are not set, check your .env file")
+	}
+	return messenger.NewMessenger("amqp://" + brUser + ":" + brPass + "@" + brHost + ":" + brPort + "/")
+}
+
 func main() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
@@ -56,7 +69,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't get database : %s", err.Error())
 	}
-	srv := server.NewServer(orm)
+
+	log.Info("Connecting to AMQP broker")
+	msn, err := getMessenger()
+	if err != nil {
+		log.Fatalf("Couldn't get messenger %s", err.Error())
+	}
+	srv := server.NewServer(orm, msn)
 
 	e := echo.New()
 
