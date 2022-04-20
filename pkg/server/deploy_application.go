@@ -37,7 +37,7 @@ func (srv *Server) DeployApplication(ctx echo.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	err = srv.msn.Publish(messenger.APP_DEPLOY_QUEUE, body)
+	err = srv.msn.Publish(messenger.AppDeployQueue, body)
 	if err != nil {
 		return err
 	}

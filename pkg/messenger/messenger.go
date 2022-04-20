@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	APP_DEPLOY_QUEUE = "application.deploy"
+	AppDeployQueue = "application.deploy"
 )
 
 type Messenger struct {
