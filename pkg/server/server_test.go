@@ -5,6 +5,7 @@ import (
 	"github.com/mehdibo/go_deploy/pkg/auth"
 	"github.com/mehdibo/go_deploy/pkg/db"
 	"github.com/mehdibo/go_deploy/pkg/env"
+	"github.com/mehdibo/go_deploy/pkg/messenger"
 	"github.com/mehdibo/go_deploy/pkg/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -60,6 +61,22 @@ func (s *ServerTestSuite) getDb() *gorm.DB {
 		dbConn.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE")
 	}
 	return dbConn
+}
+
+func (s *ServerTestSuite) getMessenger() messenger.Messenger {
+	// Load broker credentials
+	brHost := env.Get("AMQP_HOST")
+	brUser := env.Get("AMQP_USER")
+	brPass := env.Get("AMQP_PASS")
+	brPort := env.GetDefault("AMQP_PORT", "5672")
+	if brHost == "" || brUser == "" || brPass == "" {
+		s.T().Fatal("required broker credentials are not set, check your .env file")
+	}
+	msn, err := messenger.NewMessenger("amqp://" + brUser + ":" + brPass + "@" + brHost + ":" + brPort + "/")
+	if err != nil {
+		s.T().Fatal(err)
+	}
+	return msn
 }
 
 func loadFixtures(dbConn *gorm.DB) error {

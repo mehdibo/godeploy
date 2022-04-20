@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mehdibo/go_deploy/pkg/auth"
 	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/go_deploy/pkg/messenger"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
@@ -13,12 +14,13 @@ import (
 
 // Server Represents a server to handle requests, must implement GoDeploy.ServerInterface
 type Server struct {
-	db *gorm.DB
+	db  *gorm.DB
+	msn *messenger.Messenger
 }
 
 // NewServer create a Server instance
-func NewServer(db *gorm.DB) *Server {
-	return &Server{db: db}
+func NewServer(db *gorm.DB, msn *messenger.Messenger) *Server {
+	return &Server{db: db, msn: msn}
 }
 
 func isGranted(ctx echo.Context, role string) bool {
