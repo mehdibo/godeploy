@@ -85,6 +85,17 @@ func (s *ServerTestSuite) TestAddApplication() {
 					"url":      "google.com",
 				},
 			}),
+			// Non string header value
+			getInvalidPayload("httpTasks", []map[string]interface{}{
+				{
+					"method":   "POST",
+					"priority": 0,
+					"url":      "https://google.com",
+					"headers": map[string]interface{}{
+						"some-header": 21,
+					},
+				},
+			}),
 		}
 		for _, payload := range invalidRequests {
 			r := strings.NewReader(payload)

@@ -20,6 +20,14 @@ func getHttpTasks(ctx echo.Context, rawTasks []api.NewHttpTask) ([]db.Task, erro
 		newHttpTask.Url = httpTask.Url
 
 		if httpTask.Headers != nil {
+			for _, val := range *httpTask.Headers {
+				if _, isString := val.(string); !isString {
+					return nil, &echo.HTTPError{
+						Code:    http.StatusBadRequest,
+						Message: "HTTP header values must all be of the type string",
+					}
+				}
+			}
 			newHttpTask.Headers = *(httpTask.Headers)
 		}
 
