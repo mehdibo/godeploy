@@ -117,5 +117,5 @@ func main() {
 
 	api.RegisterHandlers(g, srv)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":" + env.GetDefault("LISTEN_PORT", "8080")))
 }
