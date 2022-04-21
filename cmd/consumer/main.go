@@ -79,25 +79,16 @@ func getDeployer() (*deployer.Deployer, error) {
 
 func consume(d *amqp.Delivery) {
 	// Parse msg body
-	var msgBody map[string]uint
-	err := json.Unmarshal(d.Body, &msgBody)
+	var msg messenger.DeployApplication
+	err := json.Unmarshal(d.Body, &msg)
 	if err != nil {
 		log.Errorf("Couldn't decode message body: %s", err.Error())
-		return
-	}
-	// Validate payload
-	if _, ok := msgBody["id"]; !ok {
-		log.Errorf("Invalid payload")
-		return
-	}
-	if _, ok := msgBody["attempt"]; !ok {
-		log.Errorf("Invalid payload")
 		return
 	}
 	// Load Application from DB
 	log.Info("Loading application from database")
 	var app db.Application
-	tx := orm.Preload("Tasks.HttpTask").Preload("Tasks.SshTask").First(&app, msgBody["id"])
+	tx := orm.Preload("Tasks.HttpTask").Preload("Tasks.SshTask").First(&app, msg.ID)
 	if tx.Error != nil {
 		if tx.Error == gorm.ErrRecordNotFound {
 			log.Error("Application not found")
@@ -108,14 +99,23 @@ func consume(d *amqp.Delivery) {
 	}
 
 	log.Info("Running deployment tasks")
-	log.Infof("Attempt %d out of %d", msgBody["attempt"], MaxAttempts)
+	log.Infof("Attempt %d out of %d", msg.Attempt, MaxAttempts)
 
 	err = dply.DeployApp(&app)
 	if err == nil {
+		log.Info("Deployment was successful")
+		if msg.Commit != nil {
+			app.LatestCommit = *msg.Commit
+		}
+		if msg.Version != nil {
+			app.LatestVersion = *msg.Version
+		}
+		app.LastDeployedAt = time.Now()
+		orm.Save(&app)
 		return
 	}
 
-	if msgBody["attempt"] >= MaxAttempts {
+	if msg.Attempt >= MaxAttempts {
 		log.Warning("Reached maximum attempts, cancelling job")
 		return
 	}
@@ -127,8 +127,8 @@ func consume(d *amqp.Delivery) {
 
 	if err == deployer.ErrUnrecoverable {
 		log.Info("Deployment is recoverable, postponing job")
-		msgBody["attempt"]++
-		body, err := json.Marshal(msgBody)
+		msg.Attempt++
+		body, err := json.Marshal(msg)
 		if err != nil {
 			log.Errorf("Couldn't marshal payload: %s", err)
 			return
@@ -141,7 +141,6 @@ func consume(d *amqp.Delivery) {
 		log.Debugf("Sleeping for %d to retry job", SleepTime)
 		time.Sleep(SleepTime * time.Second)
 	}
-
 }
 
 func main() {
