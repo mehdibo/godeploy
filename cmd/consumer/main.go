@@ -111,7 +111,10 @@ func consume(d *amqp.Delivery) {
 			app.LatestVersion = *msg.Version
 		}
 		app.LastDeployedAt = time.Now()
-		orm.Save(&app)
+		tx := orm.Save(&app)
+		if tx.Error != nil {
+			log.Errorf("Failed to update Application: %s", tx.Error.Error())
+		}
 		return
 	}
 
