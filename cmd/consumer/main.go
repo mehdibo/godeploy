@@ -64,12 +64,12 @@ func getMessenger() (*messenger.Messenger, error) {
 
 func getDeployer() (*deployer.Deployer, error) {
 	sshPrivKey := env.Get("SSH_PRIVATE_KEY")
-	sshKnownHosts := env.Get("SSH_KNOWN_HOSTS_FILE")
+	sshKnownHosts := "./KnownHosts"
 	sshPassPhrase := env.GetDefault("SSH_PASSPHRASE", "")
 	if sshPrivKey == "" {
 		return nil, errors.New("required SSH config is not set")
 	}
-	f, err := os.OpenFile(sshKnownHosts, os.O_RDWR, 0600)
+	f, err := os.OpenFile(sshKnownHosts, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return nil, err
 	}
