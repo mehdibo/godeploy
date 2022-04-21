@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ExecuteHttpTask(task *db.HttpTask) error {
+func (d *Deployer) executeHttpTask(task *db.HttpTask) error {
 	var body io.Reader = nil
 	if task.Body != "" {
 		body = strings.NewReader(task.Body)
