@@ -29,9 +29,11 @@ func (srv *Server) DeployApplication(ctx echo.Context, id int) error {
 		return badRequest(ctx, "This version is already deployed")
 	}
 	// Add deployment to queue
-	body, err := json.Marshal(map[string]uint{
-		"id":      app.ID,
-		"attempt": 0,
+	body, err := json.Marshal(messenger.DeployApplication{
+		ID:      app.ID,
+		Attempt: 0,
+		Commit:  payload.Commit,
+		Version: payload.Version,
 	})
 	if err != nil {
 		return err
