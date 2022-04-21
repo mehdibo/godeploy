@@ -22,7 +22,7 @@ pkg/api/go-deploy.gen.go: pkg/api/go-deploy.yml
 	oapi-codegen -generate 'types,server,spec' -package api -o pkg/api/go-deploy.gen.go pkg/api/go-deploy.yml
 
 .PHONY: generate-api
-generate-api: pkg/api/go-deploy.gen.go
+api: pkg/api/go-deploy.gen.go
 
 .PHONY: lint
 lint:
