@@ -22,9 +22,10 @@ const (
 )
 
 var (
-	orm  *gorm.DB
-	dply *deployer.Deployer
-	msn  *messenger.Messenger
+	orm     *gorm.DB
+	dply    *deployer.Deployer
+	msn     *messenger.Messenger
+	Version = "dev-version"
 )
 
 func getDb() (*gorm.DB, error) {
@@ -150,6 +151,7 @@ func main() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
 	})
+	log.Infof("Starting consumer - %s", Version)
 	log.Info("Loading .env files")
 	env.LoadDotEnv()
 	logLvl := log.DebugLevel

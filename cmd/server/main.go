@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+var Version = "dev-version"
+
 func getDb() (*gorm.DB, error) {
 	// Load database credentials
 	dbHost := env.Get("DB_HOST")
@@ -56,6 +58,7 @@ func main() {
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
 	})
+	log.Infof("Go Deploy - %s", Version)
 	log.Info("Loading .env files")
 	env.LoadDotEnv()
 	logLvl := log.DebugLevel

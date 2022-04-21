@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// rootCmd represents the root command
 var (
-	orm *gorm.DB
+	orm     *gorm.DB
+	Version = "dev-version"
 )
 
 // NewRootCmd create the root command
@@ -21,9 +21,11 @@ func NewRootCmd() *cobra.Command {
 	}
 }
 
+// rootCmd represents the root command
 var rootCmd = NewRootCmd()
 
 func Execute() error {
+
 	return rootCmd.Execute()
 }
 
@@ -53,6 +55,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags()
+	rootCmd.Version = Version
 }
 
 func initConfig() {
