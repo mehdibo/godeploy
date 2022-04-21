@@ -3,7 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/mehdibo/go_deploy/pkg/messenger"
+	"github.com/mehdibo/godeploy/pkg/messenger"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"

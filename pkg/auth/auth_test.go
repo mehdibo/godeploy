@@ -2,7 +2,7 @@ package auth
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/db"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

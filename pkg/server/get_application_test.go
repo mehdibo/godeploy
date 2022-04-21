@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/mehdibo/go_deploy/pkg/api"
+	"github.com/mehdibo/godeploy/pkg/api"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"

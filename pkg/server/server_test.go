@@ -2,11 +2,11 @@ package server
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/auth"
-	"github.com/mehdibo/go_deploy/pkg/db"
-	"github.com/mehdibo/go_deploy/pkg/env"
-	"github.com/mehdibo/go_deploy/pkg/messenger"
-	"github.com/mehdibo/go_deploy/pkg/validator"
+	"github.com/mehdibo/godeploy/pkg/auth"
+	"github.com/mehdibo/godeploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/env"
+	"github.com/mehdibo/godeploy/pkg/messenger"
+	"github.com/mehdibo/godeploy/pkg/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
