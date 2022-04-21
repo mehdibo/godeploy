@@ -204,8 +204,8 @@ components:
           type: string
           description: Can be either ssh or http
           enum:
-            - HttpTask
             - SshTask
+            - HttpTask
         task:
           description: Can either contain HTTP or SSH task
           oneOf:
@@ -242,7 +242,9 @@ components:
           format: url
         headers:
           type: object
-          description: "An object of Header-name:Value"
+          description: "An object containing headers and their values, all values must be of the type string"
+          example:
+            Authorization: Bearer some_token
         body:
           type: string
 
