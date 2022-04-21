@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mehdibo/go_deploy/cmd/console/cmd"
+	"github.com/mehdibo/godeploy/cmd/console/cmd"
 )
 
 func main() {

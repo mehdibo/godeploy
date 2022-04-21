@@ -1,7 +1,7 @@
 package deployer
 
 import (
-	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/db"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"

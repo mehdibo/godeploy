@@ -3,8 +3,8 @@ package server
 import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/auth"
-	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/auth"
+	"github.com/mehdibo/godeploy/pkg/db"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/datatypes"
 	"net/http"

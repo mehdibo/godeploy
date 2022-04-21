@@ -2,7 +2,7 @@ package deployer
 
 import (
 	"errors"
-	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/db"
 	"github.com/melbahja/goph"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"

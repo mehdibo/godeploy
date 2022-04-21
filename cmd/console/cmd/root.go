@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"github.com/mehdibo/go_deploy/pkg/db"
-	"github.com/mehdibo/go_deploy/pkg/env"
+	"github.com/mehdibo/godeploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/env"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 )

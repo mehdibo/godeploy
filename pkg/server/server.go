@@ -3,9 +3,9 @@ package server
 import (
 	"crypto/subtle"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/auth"
-	"github.com/mehdibo/go_deploy/pkg/db"
-	"github.com/mehdibo/go_deploy/pkg/messenger"
+	"github.com/mehdibo/godeploy/pkg/auth"
+	"github.com/mehdibo/godeploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/messenger"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"

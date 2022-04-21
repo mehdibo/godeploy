@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/api"
-	"github.com/mehdibo/go_deploy/pkg/auth"
-	"github.com/mehdibo/go_deploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/api"
+	"github.com/mehdibo/godeploy/pkg/auth"
+	"github.com/mehdibo/godeploy/pkg/db"
 	"net/http"
 	"sort"
 )

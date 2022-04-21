@@ -3,10 +3,10 @@ package server
 import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdibo/go_deploy/pkg/api"
-	"github.com/mehdibo/go_deploy/pkg/auth"
-	"github.com/mehdibo/go_deploy/pkg/db"
-	"github.com/mehdibo/go_deploy/pkg/messenger"
+	"github.com/mehdibo/godeploy/pkg/api"
+	"github.com/mehdibo/godeploy/pkg/auth"
+	"github.com/mehdibo/godeploy/pkg/db"
+	"github.com/mehdibo/godeploy/pkg/messenger"
 	"net/http"
 )
 
