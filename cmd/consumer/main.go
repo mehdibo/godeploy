@@ -17,6 +17,14 @@ import (
 const (
 	// MaxAttempts maximum attempts for a failed message
 	MaxAttempts = 5
+	// SleepTime seconds to sleep after we requeue a failed job
+	SleepTime = 3
+)
+
+var (
+	orm  *gorm.DB
+	dply *deployer.Deployer
+	msn  *messenger.Messenger
 )
 
 func getDb() (*gorm.DB, error) {
@@ -69,12 +77,71 @@ func getDeployer() (*deployer.Deployer, error) {
 	return deployer.NewDeployer(sshPrivKey, sshPassPhrase, sshKnownHosts), nil
 }
 
-func ackMsg(d amqp.Delivery) {
-	log.Info("Acknowledging message")
-	err := d.Ack(false)
+func consume(d *amqp.Delivery) {
+	// Parse msg body
+	var msgBody map[string]uint
+	err := json.Unmarshal(d.Body, &msgBody)
 	if err != nil {
-		log.Errorf("Couldn't acknowledge message: %s", err.Error())
+		log.Errorf("Couldn't decode message body: %s", err.Error())
+		return
 	}
+	// Validate payload
+	if _, ok := msgBody["id"]; !ok {
+		log.Errorf("Invalid payload")
+		return
+	}
+	if _, ok := msgBody["attempt"]; !ok {
+		log.Errorf("Invalid payload")
+		return
+	}
+	// Load Application from DB
+	log.Info("Loading application from database")
+	var app db.Application
+	tx := orm.Preload("Tasks.HttpTask").Preload("Tasks.SshTask").First(&app, msgBody["id"])
+	if tx.Error != nil {
+		if tx.Error == gorm.ErrRecordNotFound {
+			log.Error("Application not found")
+			return
+		}
+		log.Errorf("Database error: %s", tx.Error.Error())
+		return
+	}
+
+	log.Info("Running deployment tasks")
+	log.Infof("Attempt %d out of %d", msgBody["attempt"], MaxAttempts)
+
+	err = dply.DeployApp(&app)
+	if err == nil {
+		return
+	}
+
+	if msgBody["attempt"] >= MaxAttempts {
+		log.Warning("Reached maximum attempts, cancelling job")
+		return
+	}
+
+	if err == deployer.ErrUnrecoverable {
+		log.Error("Deployment failed with unrecoverable message, cancelling job")
+		return
+	}
+
+	if err == deployer.ErrUnrecoverable {
+		log.Info("Deployment is recoverable, postponing job")
+		msgBody["attempt"]++
+		body, err := json.Marshal(msgBody)
+		if err != nil {
+			log.Errorf("Couldn't marshal payload: %s", err)
+			return
+		}
+		err = msn.Publish(messenger.AppDeployQueue, body)
+		if err != nil {
+			log.Errorf("Failed to publish message: %s", err.Error())
+			return
+		}
+		log.Debugf("Sleeping for %d to retry job", SleepTime)
+		time.Sleep(SleepTime * time.Second)
+	}
+
 }
 
 func main() {
@@ -89,19 +156,21 @@ func main() {
 	}
 	log.SetLevel(logLvl)
 
-	dply, err := getDeployer()
+	var err error
+
+	dply, err = getDeployer()
 	if err != nil {
 		log.Fatalf("Couldn't get deployer : %s", err.Error())
 	}
 
 	log.Info("Connecting to database")
-	orm, err := getDb()
+	orm, err = getDb()
 	if err != nil {
 		log.Fatalf("Couldn't get database : %s", err.Error())
 	}
 
 	log.Info("Connecting to AMQP broker")
-	msn, err := getMessenger()
+	msn, err = getMessenger()
 	if err != nil {
 		log.Fatalf("Couldn't get messenger %s", err.Error())
 	}
@@ -119,66 +188,12 @@ func main() {
 			log.Info("Received a message")
 			log.Debugf("Message body: %s", d.Body)
 
-			var msgBody map[string]uint
-			err := json.Unmarshal(d.Body, &msgBody)
+			consume(&d)
+			log.Info("Acknowledging message")
+			err := d.Ack(false)
 			if err != nil {
-				log.Errorf("Couldn't decode message body: %s", err.Error())
-				continue
+				log.Errorf("Couldn't acknowledge message: %s", err.Error())
 			}
-			appId, exists := msgBody["id"]
-			if !exists {
-				ackMsg(d)
-				log.Errorf("Invalid payload")
-				continue
-			}
-			appAttempt, exists := msgBody["attempt"]
-			if !exists {
-				ackMsg(d)
-				log.Errorf("Invalid payload")
-				continue
-			}
-			log.Infof("Attempt %d out of %d", appAttempt, MaxAttempts)
-			var app db.Application
-
-			tx := orm.Preload("Tasks.HttpTask").Preload("Tasks.SshTask").First(&app, appId)
-			if tx.Error != nil {
-				if tx.Error == gorm.ErrRecordNotFound {
-					ackMsg(d)
-					log.Error("Application not found")
-					continue
-				}
-				log.Errorf("Database error: %s", tx.Error.Error())
-				continue
-			}
-
-			err = dply.DeployApp(&app)
-			if err != nil {
-				if err == deployer.ErrRecoverable {
-					if appAttempt >= MaxAttempts {
-						ackMsg(d)
-						log.Errorf("Reached maximum attempts")
-						continue
-					}
-					body, err := json.Marshal(map[string]uint{
-						"id":      appId,
-						"attempt": appAttempt + 1,
-					})
-					if err != nil {
-						log.Errorf("Couldn't marshal payload: %s", err)
-						continue
-					}
-					log.Warning("Failed with a recoverable error, postponing message")
-					err = msn.Publish(messenger.AppDeployQueue, body)
-					if err != nil {
-						log.Errorf("Failed to publish message: %s", err.Error())
-					}
-					time.Sleep(3 * time.Second)
-				}
-				if err == deployer.ErrUnrecoverable {
-					log.Error("Deployment failed with unrecoverable message")
-				}
-			}
-			ackMsg(d)
 		}
 	}()
 
