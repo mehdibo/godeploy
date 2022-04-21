@@ -22,12 +22,10 @@ func GetDefault(key string, defaultValue string) string {
 
 // LoadDotEnv load .env files in the following order:
 // .env, .env.local, .env.$APP_ENV, .env.$APP_ENV.local
+// If there is a problem loading any .env file, it will just be ignored
 // TODO: check for required values
 func LoadDotEnv() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Failed to load .env: %s", err.Error())
-	}
+	_ = godotenv.Load(".env")
 	appEnv := os.Getenv("APP_ENV")
 	if appEnv == "" {
 		appEnv = "dev"
