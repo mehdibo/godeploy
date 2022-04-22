@@ -19,7 +19,6 @@ $(CONSUMER_NAME): vendor cmd/consumer/main.go pkg/auth/** pkg/db/** pkg/env/** p
 vendor: go.mod go.sum
 	go mod tidy
 	go mod vendor
-
 pkg/api/go-deploy.gen.go: pkg/api/go-deploy.yml
 	oapi-codegen -generate 'types,server,spec' -package api -o pkg/api/go-deploy.gen.go pkg/api/go-deploy.yml
 
@@ -36,7 +35,8 @@ test:
 
 .PHONY: clean
 clean:
-	rm -f $(SERVER_NAME) $(CONSOLE_NAME) $(CONSUMER_NAME) pkg/api/go-deploy.gen.go
+	rm -f $(SERVER_NAME) $(CONSOLE_NAME) $(CONSUMER_NAME)
+
 
 .PHONY: re
 re: clean all
