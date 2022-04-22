@@ -4,6 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strings"
 )
 
 type Validator struct {
@@ -18,5 +19,11 @@ func (v *Validator) Validate(i interface{}) error {
 }
 
 func NewValidator() *Validator {
-	return &Validator{validator: validator.New()}
+	v := validator.New()
+	_ = v.RegisterValidation("fingerprint", fingerprint)
+	return &Validator{validator: v}
+}
+
+func fingerprint(fl validator.FieldLevel) bool {
+	return strings.HasPrefix(fl.Field().String(), "SHA256:")
 }

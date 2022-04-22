@@ -52,7 +52,7 @@ type Task struct {
 type SshTask struct {
 	gorm.Model
 	TaskId            uint
-	ServerFingerprint string `validate:"required"`
+	ServerFingerprint string `validate:"required,fingerprint"`
 	Username          string `validate:"required"`
 	Host              string `validate:"required"`
 	Port              uint   `validate:"required"`
