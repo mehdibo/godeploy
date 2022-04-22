@@ -104,6 +104,31 @@ paths:
         '205':
           description: Deployment queued
 
+  /applications/{id}/regenerate:
+    post:
+      description: Regenerate a new secret
+      operationId: regenerateApplicationSecret
+      tags:
+        - Applications
+      parameters:
+        - name: id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '200':
+          description: Secret regenerated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedApplication'
+
 components:
   responses:
     BadRequest:
