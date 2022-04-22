@@ -1,4 +1,4 @@
-# Go Deploy (WIP) 
+# Go Deploy
 [![Test](https://github.com/mehdibo/godeploy/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/mehdibo/godeploy/actions/workflows/test.yml)
 
 Go Deploy is a small tool that allows you to listen on webhooks and run SSH commands
