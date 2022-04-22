@@ -55,7 +55,7 @@ type SshTask struct {
 	ServerFingerprint string `validate:"required,fingerprint"`
 	Username          string `validate:"required"`
 	Host              string `validate:"required"`
-	Port              uint   `validate:"required"`
+	Port              uint   `validate:"required,gte=1,lte=65535"`
 	Command           string `validate:"required"`
 }
 

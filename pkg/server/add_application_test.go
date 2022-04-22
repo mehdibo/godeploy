@@ -151,6 +151,27 @@ func (s *ServerTestSuite) TestAddApplication() {
 					"command":     "",
 				},
 			}),
+			// Invalid ssh port
+			getInvalidPayload("sshTasks", []map[string]interface{}{
+				{
+					"priority":    0,
+					"fingerprint": "SHA256:somefingerprint",
+					"username":    "user",
+					"host":        "host",
+					"port":        0,
+					"command":     "ls",
+				},
+			}),
+			getInvalidPayload("sshTasks", []map[string]interface{}{
+				{
+					"priority":    0,
+					"fingerprint": "SHA256:somefingerprint",
+					"username":    "user",
+					"host":        "host",
+					"port":        65535 + 1,
+					"command":     "ls",
+				},
+			}),
 		}
 		for _, payload := range invalidRequests {
 			r := strings.NewReader(payload)
