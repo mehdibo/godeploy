@@ -1,6 +1,6 @@
 openapi: "3.0.2"
 info:
-  version: 1.0.0
+  version: v1.0.0-beta
   title: Go Deploy
   description: Go Deploy is a tool that listens on HTTP requests and trigger tasks to deploy applications
   contact:
