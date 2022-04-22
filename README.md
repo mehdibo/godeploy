@@ -6,3 +6,7 @@ or send HTTP requests, it is meant to be used with CI tools to automatically dep
 
 It is ideal to use in an infrastructure that has many internal servers, by using Go Deploy
 you will only have to expose one server to listen on webhook requests.
+
+## Usage
+
+For usage and the setup guide check [the wiki](https://github.com/mehdibo/godeploy/wiki)
