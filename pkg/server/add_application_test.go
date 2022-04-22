@@ -118,6 +118,39 @@ func (s *ServerTestSuite) TestAddApplication() {
 					"command":     "ls",
 				},
 			}),
+			// Empty ssh username
+			getInvalidPayload("sshTasks", []map[string]interface{}{
+				{
+					"priority":    0,
+					"fingerprint": "SHA256:somefingerprint",
+					"username":    "",
+					"host":        "host",
+					"port":        22,
+					"command":     "ls",
+				},
+			}),
+			// Empty ssh host
+			getInvalidPayload("sshTasks", []map[string]interface{}{
+				{
+					"priority":    0,
+					"fingerprint": "SHA256:somefingerprint",
+					"username":    "user",
+					"host":        "",
+					"port":        22,
+					"command":     "ls",
+				},
+			}),
+			// Empty ssh command
+			getInvalidPayload("sshTasks", []map[string]interface{}{
+				{
+					"priority":    0,
+					"fingerprint": "SHA256:somefingerprint",
+					"username":    "user",
+					"host":        "host",
+					"port":        22,
+					"command":     "",
+				},
+			}),
 		}
 		for _, payload := range invalidRequests {
 			r := strings.NewReader(payload)
