@@ -17,6 +17,9 @@ func NewGetFingerprintCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			port, err := cmd.Flags().GetInt("port")
+			if err != nil {
+				return err
+			}
 			sshPrivKey := env.Get("SSH_PRIVATE_KEY")
 			sshPassPhrase := env.GetDefault("SSH_PASSPHRASE", "")
 			if sshPrivKey == "" {
