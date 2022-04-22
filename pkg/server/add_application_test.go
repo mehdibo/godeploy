@@ -196,7 +196,7 @@ func (s *ServerTestSuite) TestAddApplication() {
 	     "headers": {
 	       "Test header": "value"
 		  },
-	     "method": "POST",
+	     "method": "post",
 	     "priority": 0,
 	     "url": "https://google.com"
 	   },

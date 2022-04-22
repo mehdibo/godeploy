@@ -7,6 +7,7 @@ import (
 	"github.com/mehdibo/godeploy/pkg/db"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 func getHttpTasks(ctx echo.Context, rawTasks []api.NewHttpTask) ([]db.Task, error) {
@@ -16,7 +17,7 @@ func getHttpTasks(ctx echo.Context, rawTasks []api.NewHttpTask) ([]db.Task, erro
 		var task db.Task
 		var newHttpTask db.HttpTask
 
-		newHttpTask.Method = httpTask.Method
+		newHttpTask.Method = strings.ToUpper(httpTask.Method)
 		newHttpTask.Url = httpTask.Url
 
 		if httpTask.Headers != nil {
