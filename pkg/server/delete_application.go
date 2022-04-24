@@ -16,7 +16,8 @@ func (srv *Server) DeleteApplication(ctx echo.Context, id int) error {
 	if res.RowsAffected == 0 {
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	for _, task := range app.Tasks {
+	for i := range app.Tasks {
+		task := app.Tasks[i]
 		if task.TaskType == db.TaskTypeSsh {
 			tx := srv.db.Delete(task.SshTask)
 			if tx.Error != nil {
