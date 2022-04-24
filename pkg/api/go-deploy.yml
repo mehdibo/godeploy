@@ -74,6 +74,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationItem"
+    delete:
+      description: Delete application
+      operationId: deleteApplication
+      tags:
+        - Applications
+      parameters:
+        - name: id
+          in: path
+          description: Application ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '204':
+          description: Application deleted
 
   /applications/{id}/deploy:
     post:
