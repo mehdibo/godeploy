@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -97,7 +98,8 @@ func main() {
 
 	g.Use(mdl.BasicAuthWithConfig(mdl.BasicAuthConfig{
 		Skipper: func(c echo.Context) bool {
-			return c.Path() == "/api/swagger.json"
+			return c.Path() == "/api/swagger.json" ||
+				(strings.HasPrefix(c.Path(), "/api/applications/") && strings.HasSuffix(c.Path(), "/deploy"))
 		},
 		Validator: srv.ValidateBasicAuth,
 		Realm:     "",
